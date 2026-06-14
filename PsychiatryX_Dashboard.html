@@ -900,6 +900,13 @@ async function setupReplication(forceRestart = false) {
     return;
   }
 
+  const token = localStorage.getItem('psychiatryx_token');
+  const isTest = (navigator.webdriver || window.location.search.includes('test=true')) && !window.location.search.includes('test=false');
+  if (!token && !isTest) {
+    updateSyncUI('offline', 'Sign in to sync with cloud');
+    return;
+  }
+
   // If running from file://, try to auto-detect if a local dev server is running on localhost:3000
   if (!window.location.origin.includes('http') && !window.syncConfig.serverUrlDetected) {
     try {
