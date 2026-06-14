@@ -131,7 +131,7 @@ test.describe('PsychiatryX Authentication & Authorization E2E', () => {
     await expect(page.locator('#sync-text')).toHaveText(/(Connected & Synced|Syncing data...)/, { timeout: 15000 });
 
     // Logout and verify we are blocked again
-    await page.locator('text=Logout').click();
+    await page.locator('#header-logout-btn').click();
     await expect(page.locator('.auth-overlay')).toBeVisible();
   });
 });

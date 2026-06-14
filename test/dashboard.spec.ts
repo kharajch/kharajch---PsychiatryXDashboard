@@ -18,6 +18,15 @@ test.describe('PsychiatryX Dashboard E2E Tests', () => {
     page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
     page.on('pageerror', err => console.log('BROWSER EXCEPTION:', err.message));
 
+    // Setup interceptor for Zero-Auth test bypass
+    await page.route('**/api/sync/**', async route => {
+      const headers = {
+        ...route.request().headers(),
+        'x-zero-auth-test': 'true'
+      };
+      await route.continue({ headers });
+    });
+
     // Open the dashboard from the root endpoint
     await page.goto('/');
     

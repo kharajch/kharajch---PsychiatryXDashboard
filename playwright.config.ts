@@ -1,3 +1,4 @@
+import './test/setup-env';
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
@@ -9,7 +10,7 @@ export default defineConfig({
   reporter: 'list',
   timeout: 60000,
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://127.0.0.1:3000',
     trace: 'on-first-retry',
     headless: true,
     actionTimeout: 15000,
@@ -23,7 +24,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:3000',
+    url: 'http://127.0.0.1:3000',
     reuseExistingServer: true,
     stdout: 'ignore',
     stderr: 'pipe',

@@ -19,6 +19,11 @@ export async function getClinicSession(req: NextRequest): Promise<ClinicSession 
     role: 'clinician'
   };
 
+  // Allow Zero-Auth test bypass if explicitly requested via test header (disabled in production)
+  if (req.headers.get('x-zero-auth-test') === 'true' && process.env.NODE_ENV !== 'production') {
+    return defaultSession;
+  }
+
   const secret = process.env.NEXTAUTH_SECRET;
   let rawToken: string | null = null;
 

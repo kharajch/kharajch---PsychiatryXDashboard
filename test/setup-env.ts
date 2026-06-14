@@ -19,3 +19,7 @@ function loadEnvFile(filePath: string) {
 // Load .env first, then override with .env.local
 loadEnvFile(path.resolve(__dirname, '../.env'));
 loadEnvFile(path.resolve(__dirname, '../.env.local'));
+
+// Ensure there is a valid NEXTAUTH_SECRET for tests if none is configured
+process.env.NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || 'development-secret-only-not-for-production';
+

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Maintenance Features', () => {
-  const serverUrl = 'http://localhost:3000';
+  const serverUrl = 'http://127.0.0.1:3000';
 
   test.beforeEach(async ({ page }) => {
     // Navigate to the app

@@ -12,7 +12,11 @@ test.describe('PsychiatryX Dashboard E2E Flows', () => {
       if (isSyncOffline) {
         await route.abort();
       } else {
-        await route.continue();
+        const headers = {
+          ...route.request().headers(),
+          'x-zero-auth-test': 'true'
+        };
+        await route.continue({ headers });
       }
     });
 

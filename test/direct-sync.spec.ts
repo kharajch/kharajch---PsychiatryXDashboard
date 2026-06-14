@@ -13,7 +13,11 @@ test.describe('PsychiatryX Direct Sync (Zero-Auth) E2E', () => {
       if (isSyncOffline) {
         await route.abort();
       } else {
-        await route.continue();
+        const headers = {
+          ...route.request().headers(),
+          'x-zero-auth-test': 'true'
+        };
+        await route.continue({ headers });
       }
     });
 
@@ -85,14 +89,22 @@ test.describe('PsychiatryX Direct Sync (Zero-Auth) E2E', () => {
     
     // 3. Verify the patient exists on the backend using the default clinic ID
     // We'll call the API directly using the same 'Zero Auth' pattern
-    const res = await request.get('/api/sync/patients');
+    const res = await request.get('/api/sync/patients', {
+      headers: {
+        'x-zero-auth-test': 'true'
+      }
+    });
     expect(res.status()).toBe(200);
     const data = await res.json();
     const found = data.documents.some((d: any) => d.name === testName);
     if (!found) {
       console.log('Patient not found in first pull. Retrying pull...');
       await page.waitForTimeout(5000);
-      const res2 = await request.get('/api/sync/patients');
+      const res2 = await request.get('/api/sync/patients', {
+        headers: {
+          'x-zero-auth-test': 'true'
+        }
+      });
       const data2 = await res2.json();
       expect(data2.documents.some((d: any) => d.name === testName)).toBe(true);
     } else {

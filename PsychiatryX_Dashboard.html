@@ -449,6 +449,12 @@
       grid-template-columns: 1fr;
       gap: 16px;
     }
+    #header-logout-btn .logout-text {
+      display: none;
+    }
+    #header-logout-btn {
+      padding: 6px 10px;
+    }
   }
 
   @media (max-width: 480px) {
@@ -547,6 +553,9 @@
         <span id="sync-text">Checking Sync...</span>
       </div>
       <button class="btn btn-primary btn-sm" onclick="navigate('register')">➕ New Patient</button>
+      <button id="header-logout-btn" class="btn btn-secondary btn-sm" onclick="logout()" title="Logout" style="display: inline-flex; align-items: center; gap: 4px;">
+        <span>🚪</span><span class="logout-text">Logout</span>
+      </button>
     </div>
 
     <div id="content">
