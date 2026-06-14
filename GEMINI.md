@@ -28,7 +28,7 @@ This document defines the foundational mandates and architectural constraints fo
 
 ## 5. Security & Privacy
 -   **Zero Leakage:** Never log or print Patient Identifiable Information (PII) in console logs or error reports.
-- **Clinician Registration & Auth:** Secure clinician registration (`/api/auth/register`) creates new isolated clinic environments. NextAuth and token authentication (`/api/auth/login`) are supported for cross-device access with a fallback. **CRITICAL:** For production deployments with real patient data, `NEXTAUTH_SECRET` MUST be configured to enforce strict authentication and disable fallback.
+- **Clinician Registration & Auth:** Secure clinician registration (`/api/auth/register`) creates new isolated clinic environments. NextAuth and token authentication (`/api/auth/login`) are supported for cross-device access with a fallback. **CRITICAL:** For production deployments with real patient data, `NEXTAUTH_SECRET` MUST be configured to enforce strict authentication and disable fallback. For development environments, the system provides a temporary fallback secret to prevent 500 errors during testing if the variable is missing.
 
 -   **Data Sanitization:** All user-provided clinical notes must be sanitized before being rendered or stored.
 -   **Database Credentials Configuration:** To prevent database connection errors, ensure `MONGODB_URI` has its password special characters correctly URL-encoded (e.g., `%40` instead of `@`). MONGODB_URI presence checks must occur within connection routines to prevent build-time crashes.

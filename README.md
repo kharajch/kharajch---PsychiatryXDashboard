@@ -58,12 +58,19 @@ This project employs a unique **Hybrid Architecture** to ensure reliability and 
     node scripts/test-db.js
     ```
 
-4.  **Run the development server:**
+4.  **Seed Development Data (Optional):**
+    For quick testing, you can automatically seed the database with a default admin account and sample patients:
+    ```bash
+    curl http://localhost:3000/api/dev/seed
+    ```
+    *Credentials: admin / password123*
+
+5.  **Run the development server:**
     ```bash
     npm run dev
     ```
 
-5.  **Local HTML Client:**
+6.  **Local HTML Client:**
     Open `PsychiatryX_Dashboard.html` directly in any modern browser for office-mode operations. The client features zero-config server detection:
     - If served via HTTP, it connects back to its host origin.
     - If loaded locally (`file://` protocol), it probes `http://localhost:3000` (600ms timeout) to connect to a local server, falling back to production Vercel (https://kharajch-psychiatryx-dashboard.vercel.app) if offline.

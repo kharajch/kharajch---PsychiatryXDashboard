@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
         clinicId: user.clinicId,
         role: user.role
       },
-      secret: process.env.NEXTAUTH_SECRET || '',
+      secret: process.env.NEXTAUTH_SECRET || 'development-secret-only-not-for-production',
       maxAge: 30 * 24 * 60 * 60 // 30 days
     });
 

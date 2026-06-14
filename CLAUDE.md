@@ -8,6 +8,7 @@ This guide provides technical instructions for the development environment, buil
 - **Build:** `npm run build`
 - **Lint:** `npm run lint` (ESLint 9)
 - **Validate DB Connection:** `node scripts/test-db.js` (Tests MongoDB Atlas connection details)
+- **Seed Development Data:** `curl http://localhost:3000/api/dev/seed` (Creates admin/password123 and test data)
 - **Test:** `npx playwright test` (Runs all E2E and unit tests)
 - **Specific Test:** `npx playwright test test/api-sync.spec.ts`
 - **Auth E2E Test:** `npx playwright test test/auth-flows.spec.ts` (Validates registration, login, and auth guard overlays)
@@ -24,7 +25,7 @@ This guide provides technical instructions for the development environment, buil
 MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/PsychiatryX?retryWrites=true&w=majority
 DEFAULT_CLINIC_ID=demo-clinic-123
 ```
-*Note: NextAuth variables (NEXTAUTH_SECRET, NEXTAUTH_URL) are now optional for local and open-source deployments as the system defaults to a 'Direct Access' clinician session.*
+*Note: NextAuth variables (NEXTAUTH_SECRET, NEXTAUTH_URL) are optional for local and open-source deployments. The system defaults to 'Direct Access' clinician sessions, and the login API provides a development fallback secret to prevent crashes if NEXTAUTH_SECRET is missing.*
 
 ## 📐 Architecture Patterns
 

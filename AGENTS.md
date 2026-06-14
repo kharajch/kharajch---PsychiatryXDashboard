@@ -27,7 +27,10 @@ If sync issues are reported:
   - Manual sync server settings input is removed from configuration.
 - **Sync Authentication & Guard:** If no token exists in `localStorage` (`psychiatryx_token`), the application intercepts navigation and redirects to a fullscreen **Clinician Sign In** or **Create Account** auth screen, blocking access to the dashboard. Registration POSTs to `/api/auth/register` and login POSTs to `/api/auth/login` to obtain and store `psychiatryx_token`, `psychiatryx_clinic_id`, `psychiatryx_username`, and doctor settings.
 - **E2E Test Bypass:** E2E test runs automatically bypass the auth screen block (`navigator.webdriver` check) to run in Zero-Auth mode without blocking Playwright. Custom tests can navigate with `?test=false` to test the auth overlay.
-- **Developer/Testing APIs:** The HTML client exposes `window.factoryReset()` to programmatically clear all local client data, and `window.setupReplication(forceRestart)` to trigger replication immediately (passing `true` resets retry backoff timers).
+- **Developer/Testing APIs:**
+  - The HTML client exposes `window.factoryReset()` to programmatically clear all local client data.
+  - `window.setupReplication(forceRestart)` triggers replication immediately.
+  - **Seed Database (GET):** Developers can use `/api/dev/seed` to quickly provision a test user (`admin` / `password123`) and mock clinical data for local debugging.
 - **Multi-Tenant Testing:** E2E tests should inject credentials directly into `localStorage` (`psychiatryx_token` and `psychiatryx_clinic_id`) and trigger a reload/force-sync to verify clinic boundaries.
 - Validate that the `AuditLog` is capturing the synchronization attempts.
 - Ensure CORS headers allow the local HTML client if it's running on a different origin or `file://`.
