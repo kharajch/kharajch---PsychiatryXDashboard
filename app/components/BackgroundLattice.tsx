@@ -6,11 +6,14 @@ import * as THREE from 'three';
 
 function ParticleRing() {
   const pointsRef = useRef<THREE.Points>(null);
+  const timer = useMemo(() => new (THREE as any).Timer(), []);
   
-  useFrame((state) => {
+  useFrame(() => {
     if (pointsRef.current) {
-      pointsRef.current.rotation.y = state.clock.getElapsedTime() * 0.03;
-      pointsRef.current.rotation.x = state.clock.getElapsedTime() * 0.01;
+      timer.update(performance.now() / 1000);
+      const elapsedTime = timer.getElapsed();
+      pointsRef.current.rotation.y = elapsedTime * 0.03;
+      pointsRef.current.rotation.x = elapsedTime * 0.01;
     }
   });
 

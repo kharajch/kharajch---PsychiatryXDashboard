@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { gsap } from 'gsap';
 import { useSpring, animated } from 'react-spring';
 import { Tilt } from 'react-tilt';
@@ -485,6 +485,18 @@ export default function Home() {
   const [syncStatus, setSyncStatus] = useState<'offline' | 'syncing' | 'online' | 'error'>('offline');
   const [syncMessage, setSyncMessage] = useState<string>('Local only');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth <= 768;
+    }
+    return false;
+  });
+  const [isTestEnv, setIsTestEnv] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return !!(navigator.webdriver || window.location.search.includes('test=true'));
+    }
+    return false;
+  });
   
   // Database & Cache States
   const [db, setDb] = useState<any>(null);
@@ -492,6 +504,62 @@ export default function Home() {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [activePatient, setActivePatient] = useState<Patient | null>(null);
+
+  // Memoized 7-day cumulative patient growth data
+  const patientGrowthData = useMemo(() => {
+    const activePatients = patients.filter(p => !p.deleted);
+    const data = [];
+    const now = new Date();
+    
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      d.setHours(23, 59, 59, 999);
+      
+      const count = activePatients.filter(p => {
+        const regDate = p.registeredOn ? new Date(p.registeredOn) : new Date((p as any).createdAt || Date.now());
+        return regDate.getTime() <= d.getTime();
+      }).length;
+      
+      const dayLabel = d.toLocaleDateString(undefined, { weekday: 'short' });
+      data.push({ dayLabel, count });
+    }
+    return data;
+  }, [patients]);
+
+  // Memoized assessment distribution percentages
+  const assessmentDistribution = useMemo(() => {
+    const counts: Record<string, number> = {};
+    let total = 0;
+    assessments.forEach(a => {
+      if (a.type) {
+        counts[a.type] = (counts[a.type] || 0) + 1;
+        total++;
+      }
+    });
+
+    const defaultColors = ['#E63946', '#8B5CF6', '#10B981', '#F59E0B', '#3B82F6', '#EC4899', '#14B8A6'];
+    if (total === 0) {
+      return [
+        { label: 'None', count: 0, percentage: 100, color: 'var(--text-muted)' }
+      ];
+    }
+
+    const list = Object.entries(counts).map(([type, val], idx) => {
+      const scale = ASSESSMENTS[type as keyof typeof ASSESSMENTS];
+      const label = scale ? scale.short : type.toUpperCase();
+      return {
+        type,
+        label,
+        count: val,
+        percentage: Math.round((val / total) * 100),
+        color: defaultColors[idx % defaultColors.length]
+      };
+    });
+
+    return list.sort((a, b) => b.count - a.count);
+  }, [assessments]);
+
 
   // Search & Filter
   const [patientSearch, setPatientSearch] = useState<string>('');
@@ -551,11 +619,23 @@ export default function Home() {
 
   // Check login on mount
   useEffect(() => {
+    let handleResize: () => void;
     if (typeof window !== 'undefined') {
       (window as any).getSeverity = getSeverity;
       (window as any).computeDomainScores = computeDomainScores;
       (window as any).ASSESSMENTS = ASSESSMENTS;
       (window as any).factoryReset = handleFactoryReset;
+
+      if (navigator.webdriver || window.location.search.includes('test=true')) {
+        document.body.classList.add('no-animations');
+        setIsTestEnv(true);
+      }
+
+      setIsMobile(window.innerWidth <= 768);
+      handleResize = () => {
+        setIsMobile(window.innerWidth <= 768);
+      };
+      window.addEventListener('resize', handleResize);
     }
     const token = localStorage.getItem('psychiatryx_token');
     const storedUsername = localStorage.getItem('psychiatryx_username');
@@ -584,7 +664,14 @@ export default function Home() {
         }, 100);
       }
     }
+    return () => {
+      if (typeof window !== 'undefined' && handleResize) {
+        window.removeEventListener('resize', handleResize);
+      }
+    };
   }, []);
+
+
 
   // Initialize Database
   const initDatabase = async (token: string | null) => {
@@ -1023,6 +1110,41 @@ export default function Home() {
     setAnswers(updated);
   };
 
+  // Keyboard-first navigation for assessment taking
+  useEffect(() => {
+    if (currentView !== 'assessment-taking' || !activeScale) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const scale = ASSESSMENTS[activeScale];
+      if (!scale) return;
+
+      // Numerical keys '0' to '9'
+      if (/^[0-9]$/.test(e.key)) {
+        const score = parseInt(e.key, 10);
+        const hasOption = scale.options.some(opt => opt.score === score);
+        if (hasOption) {
+          handleSelectAnswer(score);
+        }
+      }
+
+      // Arrow keys
+      if (e.key === 'ArrowRight') {
+        if (currentQuestionIndex < scale.questions.length - 1) {
+          setCurrentQuestionIndex(prev => prev + 1);
+        }
+      } else if (e.key === 'ArrowLeft') {
+        if (currentQuestionIndex > 0) {
+          setCurrentQuestionIndex(prev => prev - 1);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [currentView, activeScale, currentQuestionIndex, answers, handleSelectAnswer]);
+
   const finishAssessment = async () => {
     if (!activeScale || !activePatient || !assessmentStartTime) return;
 
@@ -1141,11 +1263,11 @@ export default function Home() {
     }
   };
 
-  const saveAssessmentNotes = async (assessId: string) => {
+  const saveAssessmentNotes = async (assessId: string): Promise<Assessment | null> => {
     try {
       const doc = await db.assessments.findOne(assessId).exec();
       if (doc) {
-        await doc.incrementalPatch({
+        const updated = await doc.incrementalPatch({
           notes: assessmentNotes,
           updatedAt: Date.now()
         });
@@ -1157,10 +1279,12 @@ export default function Home() {
             record: { ...currentResult.record, notes: assessmentNotes }
           });
         }
+        return updated.toJSON() as Assessment;
       }
     } catch (err) {
       showToast('Failed to save clinician notes', 'error');
     }
+    return null;
   };
 
   const handleDeleteAssessment = async (id: string) => {
@@ -1266,7 +1390,7 @@ export default function Home() {
     });
     setMedicines(pres.medicines || []);
     setIsPrescriptionModalOpen(true);
-    showToast('Prescription loaded', 'info');
+    showToast('Prescription loaded', 'success');
   };
 
   // PDF Generators
@@ -1525,7 +1649,7 @@ export default function Home() {
       doc.setFont('Helvetica', 'normal');
       doc.setFontSize(10);
       const lines = doc.splitTextToSize(patient.complaint, W - 30);
-      lines.forEach((line) => {
+      lines.forEach((line: string) => {
         doc.text(line, 15, y);
         y += 5;
       });
@@ -1659,7 +1783,8 @@ export default function Home() {
   }, [activePatientAssessments]);
 
   return (
-    <div className="app-container">
+    <MotionConfig transition={isTestEnv ? { duration: 0 } : undefined}>
+      <div className="app-container">
       {/* Background Lattice */}
       <BackgroundLattice />
 
@@ -1688,7 +1813,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Clinician Authentication Overlay */}
+      {/* Clinician Authentication Overlay — Immersive Centered Login */}
       <AnimatePresence>
         {!isAuthenticated && (
           <motion.div 
@@ -1698,132 +1823,202 @@ export default function Home() {
             className="auth-overlay" 
             style={{ background: '#080808', zIndex: 999 }}
           >
-            <div ref={loginCardRef} className="card" style={{ width: '420px', maxWidth: '90%', background: 'rgba(18,18,18,0.8)', border: '1px solid var(--border)', backdropFilter: 'blur(20px)' }}>
-            <div className="card-header" style={{ justifyContent: 'center', borderBottom: '1px solid var(--border)' }}>
-              <h1 style={{ color: 'var(--primary)', fontSize: '24px', letterSpacing: '-0.5px' }}>PSYCHIATRY<span style={{color: 'white'}}>X</span></h1>
+            {/* Ambient floating particles */}
+            <div className="auth-particles">
+              <div className="auth-particle" />
+              <div className="auth-particle" />
+              <div className="auth-particle" />
+              <div className="auth-particle" />
+              <div className="auth-particle" />
+              <div className="auth-particle" />
+              <div className="auth-particle" />
+              <div className="auth-particle" />
             </div>
-            <div className="card-body">
-              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <h2 style={{ fontSize: '18px', color: 'white' }}>
-                  {authView === 'login' ? 'Clinician Sign In' : 'Create Clinician Account'}
-                </h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '4px' }}>Multi-Tenant Off-line Clinical Core</p>
-              </div>
 
-              {authError && (
-                <div className="alert alert-danger" style={{ marginBottom: '16px' }}>
-                  <FaExclamationTriangle />
-                  <span>{authError}</span>
-                </div>
-              )}
+            {/* Pulsing radial orbs */}
+            <div className="auth-orb auth-orb--primary" />
+            <div className="auth-orb auth-orb--secondary" />
+            <div className="auth-orb auth-orb--accent" />
 
-              <form onSubmit={authView === 'login' ? handleLogin : handleRegister}>
-                {authView === 'register' && (
-                  <div className="field">
-                    <label>Full Clinician Name</label>
-                    <input 
-                      id="reg-user-fullname"
-                      type="text" 
-                      placeholder="e.g., Dr. Sarah Jenkins" 
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                    />
-                  </div>
-                )}
-                
-                <div className="field">
-                  <label>Clinician Email / Username</label>
-                  <input 
-                    id={authView === 'register' ? 'reg-user-username' : undefined}
-                    type="text" 
-                    placeholder="doctor@clinic.com" 
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
-                </div>
-
-                {authView === 'register' && (
-                  <div className="field">
-                    <label>Clinic Name</label>
-                    <input 
-                      id="reg-user-clinicname"
-                      type="text" 
-                      placeholder="e.g., Jenkins Clinic" 
-                      value={clinicName}
-                      onChange={(e) => setClinicName(e.target.value)}
-                    />
-                  </div>
-                )}
-
-                <div className="field">
-                  <label>Portal Password</label>
-                  <input 
-                    id={authView === 'register' ? 'reg-user-password' : undefined}
-                    type="password" 
-                    placeholder="••••••••" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-
-                {authView === 'register' && (
-                  <div className="field">
-                    <label>Confirm Password</label>
-                    <input 
-                      id="reg-user-confirm-password"
-                      type="password" 
-                      placeholder="••••••••" 
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
-                  </div>
-                )}
-
-                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '10px' }} disabled={isAuthLoading}>
-                  {isAuthLoading ? <FaSpinner className="animate-spin" /> : (authView === 'login' ? 'Sign In' : 'Create Account')}
-                </button>
-              </form>
-
-              <button 
-                type="button" 
-                onClick={handleDemoLogin} 
-                className="btn btn-secondary" 
-                style={{ width: '100%', marginTop: '10px', borderStyle: 'dashed' }}
-                disabled={isAuthLoading}
+            {/* Centered auth card */}
+            <motion.div
+              className="auth-card-wrapper"
+              initial={{ opacity: 0, y: 40, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={isTestEnv ? { duration: 0 } : { type: 'spring', damping: 22, stiffness: 120, delay: 0.15 }}
+            >
+              <div 
+                ref={loginCardRef} 
+                className="card" 
+                style={{ 
+                  background: 'rgba(14,14,14,0.85)', 
+                  border: '1px solid var(--border)', 
+                  backdropFilter: 'blur(24px)', 
+                  WebkitBackdropFilter: 'blur(24px)',
+                  animation: 'authCardShimmer 6s ease-in-out infinite',
+                  boxShadow: '0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(230,57,70,0.08)'
+                }}
               >
-                Zero-Auth Sandbox Demo
-              </button>
+                <div className="card-header" style={{ justifyContent: 'center', borderBottom: '1px solid var(--border)', padding: '20px 24px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <motion.h1 
+                      style={{ color: 'var(--primary)', fontSize: '28px', letterSpacing: '-0.5px', fontWeight: 900 }}
+                      animate={{ textShadow: ['0 0 20px rgba(230,57,70,0)', '0 0 20px rgba(230,57,70,0.3)', '0 0 20px rgba(230,57,70,0)'] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                    >
+                      PSYCHIATRY<span style={{color: 'white'}}>X</span>
+                    </motion.h1>
+                    <p style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '4px', letterSpacing: '2.5px', fontWeight: 600, textTransform: 'uppercase' }}>Clinical Intelligence Platform</p>
+                  </div>
+                </div>
+                <div className="card-body" style={{ padding: '28px 28px 24px' }}>
+                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                    <h2 style={{ fontSize: '18px', color: 'white', fontWeight: 700 }}>
+                      {authView === 'login' ? 'Clinician Sign In' : 'Create Clinician Account'}
+                    </h2>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '6px' }}>Multi-Tenant Off-line Clinical Core</p>
+                  </div>
 
-              <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '12px' }}>
-                {authView === 'login' ? (
-                  <p style={{ color: 'var(--text-secondary)' }}>
-                    Need a clinic instance?{' '}
-                    <a onClick={() => setAuthView('register')} style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>Create Account</a>
-                  </p>
-                ) : (
-                  <p style={{ color: 'var(--text-secondary)' }}>
-                    Already registered?{' '}
-                    <a onClick={() => setAuthView('login')} style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>Sign In</a>
-                  </p>
-                )}
+                  {authError && (
+                    <motion.div 
+                      className="alert alert-danger" 
+                      style={{ marginBottom: '16px' }}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                    >
+                      <FaExclamationTriangle />
+                      <span>{authError}</span>
+                    </motion.div>
+                  )}
+
+                  <form onSubmit={authView === 'login' ? handleLogin : handleRegister}>
+                    {authView === 'register' && (
+                      <div className="field">
+                        <label>Full Clinician Name</label>
+                        <input 
+                          id="reg-user-fullname"
+                          type="text" 
+                          placeholder="e.g., Dr. Sarah Jenkins" 
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="field">
+                      <label>Clinician Email / Username</label>
+                      <input 
+                        id={authView === 'register' ? 'reg-user-username' : undefined}
+                        type="text" 
+                        placeholder="doctor@clinic.com" 
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                      />
+                    </div>
+
+                    {authView === 'register' && (
+                      <div className="field">
+                        <label>Clinic Name</label>
+                        <input 
+                          id="reg-user-clinicname"
+                          type="text" 
+                          placeholder="e.g., Jenkins Clinic" 
+                          value={clinicName}
+                          onChange={(e) => setClinicName(e.target.value)}
+                        />
+                      </div>
+                    )}
+
+                    <div className="field">
+                      <label>Portal Password</label>
+                      <input 
+                        id={authView === 'register' ? 'reg-user-password' : undefined}
+                        type="password" 
+                        placeholder="••••••••" 
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                    </div>
+
+                    {authView === 'register' && (
+                      <div className="field">
+                        <label>Confirm Password</label>
+                        <input 
+                          id="reg-user-confirm-password"
+                          type="password" 
+                          placeholder="••••••••" 
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                      </div>
+                    )}
+
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '10px', height: '44px' }} disabled={isAuthLoading}>
+                      {isAuthLoading ? <FaSpinner className="animate-spin" /> : (authView === 'login' ? 'Sign In' : 'Create Account')}
+                    </button>
+                  </form>
+
+                  <button 
+                    type="button" 
+                    onClick={handleDemoLogin} 
+                    className="btn btn-secondary" 
+                    style={{ width: '100%', marginTop: '10px', borderStyle: 'dashed' }}
+                    disabled={isAuthLoading}
+                  >
+                    Zero-Auth Sandbox Demo
+                  </button>
+
+                  <div style={{ textAlign: 'center', marginTop: '22px', fontSize: '12px' }}>
+                    {authView === 'login' ? (
+                      <p style={{ color: 'var(--text-secondary)' }}>
+                        Need a clinic instance?{' '}
+                        <a onClick={() => setAuthView('register')} style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>Create Account</a>
+                      </p>
+                    ) : (
+                      <p style={{ color: 'var(--text-secondary)' }}>
+                        Already registered?{' '}
+                        <a onClick={() => setAuthView('login')} style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>Sign In</a>
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Main Layout */}
       <div id="app" className={isAuthenticated ? "" : "hidden"}>
+          {/* Mobile Sidebar Backdrop */}
+          {isMobile && isMobileMenuOpen && (
+            <div 
+              id="sidebar-backdrop"
+              className="sidebar-backdrop active"
+              onClick={() => setIsMobileMenuOpen(false)}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                background: 'rgba(0,0,0,0.5)',
+                backdropFilter: 'blur(4px)',
+                zIndex: 99,
+              }}
+            />
+          )}
+
           {/* Sidebar */}
           <motion.div 
             id="sidebar"
-            initial={{ x: -280, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+            className={isMobile && isMobileMenuOpen ? "open" : ""}
+            initial={isMobile ? { x: -280 } : { x: 0, opacity: 1 }}
+            animate={isMobile ? (isMobileMenuOpen ? { x: 0 } : { x: -280 }) : { x: 0, opacity: 1 }}
+            transition={isTestEnv ? { duration: 0 } : { type: 'spring', damping: 25, stiffness: 120 }}
             style={{ 
               width: 'var(--sidebar-width)', 
-              background: 'linear-gradient(180deg, rgba(12,12,12,0.98) 0%, rgba(18,18,18,0.95) 100%)', 
+              background: 'linear-gradient(180deg, rgba(10,10,10,0.98) 0%, rgba(14,14,14,0.96) 100%)', 
               borderRight: '1px solid var(--border)', 
               position: 'fixed', top: 0, left: 0, height: '100vh', 
               zIndex: 100, display: 'flex', flexDirection: 'column',
@@ -1832,16 +2027,34 @@ export default function Home() {
               boxShadow: '10px 0 30px rgba(0,0,0,0.5)'
             }}
           >
-            <div style={{ padding: '24px 20px', borderBottom: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
+            {/* Animated scanner sweep overlay */}
+            <div className="sidebar-scan" />
+
+            {/* Pulsing glow line at top */}
+            <div className="sidebar-glow-line" />
+
+            {/* Brand header with corner accents */}
+            <div style={{ padding: '22px 20px 18px', borderBottom: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
+              <div className="sidebar-brand-corner sidebar-brand-corner--tl" />
+              <div className="sidebar-brand-corner sidebar-brand-corner--br" />
               <div style={{ position: 'relative', zIndex: 2 }}>
-                <h1 style={{ color: 'var(--primary)', fontSize: '20px', letterSpacing: '-0.5px', fontWeight: 800 }}>PSYCHIATRY<span style={{color: 'white'}}>X</span></h1>
-                <p style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px', letterSpacing: '1px', fontWeight: 600 }}>CLINICAL ENGINE</p>
+                <motion.h1 
+                  style={{ color: 'var(--primary)', fontSize: '20px', letterSpacing: '-0.5px', fontWeight: 800 }}
+                  animate={{ textShadow: ['0 0 0px rgba(230,57,70,0)', '0 0 15px rgba(230,57,70,0.25)', '0 0 0px rgba(230,57,70,0)'] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                  PSYCHIATRY<span style={{color: 'white'}}>X</span>
+                </motion.h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                  <span className="sidebar-pulse-dot" style={{ background: 'var(--primary)' }} />
+                  <p style={{ fontSize: '9px', color: 'var(--text-muted)', letterSpacing: '1.5px', fontWeight: 700, textTransform: 'uppercase' }}>Clinical Engine v2.0</p>
+                </div>
               </div>
-              <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '80px', height: '80px', background: 'var(--primary)', opacity: 0.05, filter: 'blur(30px)', borderRadius: '50%' }}></div>
+              <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', background: 'var(--primary)', opacity: 0.04, filter: 'blur(35px)', borderRadius: '50%' }} />
             </div>
 
             {/* Sync State Badge */}
-            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
+            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.015)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <motion.span 
                   animate={{ 
@@ -1868,6 +2081,41 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Quick Stats Mini-Cards */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={isTestEnv ? { duration: 0 } : { delay: 0.3 }}
+              style={{ padding: '14px', display: 'flex', gap: '8px' }}
+            >
+              <motion.div 
+                className="sidebar-quick-stat" 
+                style={{ flex: 1 }}
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className="sidebar-quick-stat-icon" style={{ background: 'rgba(230,57,70,0.1)', color: 'var(--primary)' }}>
+                  <FaUser />
+                </div>
+                <div>
+                  <div className="sidebar-quick-stat-value">{patients.filter(p => !p.deleted).length}</div>
+                  <div className="sidebar-quick-stat-label">Patients</div>
+                </div>
+              </motion.div>
+              <motion.div 
+                className="sidebar-quick-stat" 
+                style={{ flex: 1 }}
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className="sidebar-quick-stat-icon" style={{ background: 'rgba(139,92,246,0.1)', color: 'var(--purple)' }}>
+                  <FaFileMedical />
+                </div>
+                <div>
+                  <div className="sidebar-quick-stat-value">{assessments.length}</div>
+                  <div className="sidebar-quick-stat-label">Scales</div>
+                </div>
+              </motion.div>
+            </motion.div>
+
             {/* Active Patient Card */}
             <AnimatePresence>
               {activePatient ? (
@@ -1875,7 +2123,7 @@ export default function Home() {
                   initial={{ opacity: 0, scale: 0.9, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                  style={{ margin: '14px', padding: '14px', background: 'rgba(230,57,70,0.1)', border: '1px solid var(--border-active)', borderRadius: 'var(--radius)', boxShadow: '0 4px 15px rgba(230,57,70,0.1)' }}
+                  style={{ margin: '0 14px 10px', padding: '14px', background: 'rgba(230,57,70,0.08)', border: '1px solid var(--border-active)', borderRadius: 'var(--radius)', boxShadow: '0 4px 15px rgba(230,57,70,0.1)' }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: 800, letterSpacing: '0.8px' }}>ACTIVE PATIENT</span>
@@ -1885,16 +2133,19 @@ export default function Home() {
                   <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>ID: {activePatient.patientId || 'N/A'} | {activePatient.age}Y | {activePatient.gender}</p>
                 </motion.div>
               ) : (
-                <div style={{ margin: '14px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px dashed var(--border)', borderRadius: 'var(--radius)', textAlign: 'center' }}>
+                <div style={{ margin: '0 14px 10px', padding: '14px', background: 'rgba(255,255,255,0.02)', border: '1px dashed var(--border)', borderRadius: 'var(--radius)', textAlign: 'center' }}>
+                  <FaUser style={{ fontSize: '16px', color: 'var(--text-muted)', marginBottom: '6px', opacity: 0.4 }} />
                   <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>No Active Subject</p>
                 </div>
               )}
             </AnimatePresence>
 
             {/* Register Patient Sidebar Action */}
-            <div style={{ padding: '0 14px', marginTop: '10px' }}>
-              <div 
+            <div style={{ padding: '0 14px', marginBottom: '6px' }}>
+              <motion.div 
                 className="btn btn-primary btn-sm" 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   setEditingPatient(null);
                   setPatientForm({
@@ -1907,12 +2158,14 @@ export default function Home() {
                 style={{ width: '100%', justifyContent: 'center', cursor: 'pointer', borderRadius: 'var(--radius)' }}
               >
                 ➕ Register Patient
-              </div>
+              </motion.div>
             </div>
 
             {/* Nav Menu */}
-            <div style={{ padding: '10px', flex: 1 }}>
-              <p style={{ fontSize: '9px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', padding: '10px 14px 6px' }}>Main Navigation</p>
+            <div style={{ padding: '6px 10px', flex: 1 }}>
+              <div className="sidebar-divider">
+                <span className="sidebar-divider-label">Navigation</span>
+              </div>
               {[
                 { view: 'dashboard', label: 'Overview', icon: <FaHeartbeat /> },
                 { view: 'patients', label: 'Patient Database', icon: <FaUser /> },
@@ -1925,9 +2178,11 @@ export default function Home() {
                 <motion.div 
                   key={item.view}
                   id={item.view === 'assessments' ? 'nav-assess' : undefined}
-                  initial={{ opacity: 0, x: -15 }}
+                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 + idx * 0.04 }}
+                  transition={isTestEnv ? { duration: 0 } : { delay: 0.15 + idx * 0.06, type: 'spring', damping: 20, stiffness: 150 }}
+                  whileHover={currentView !== item.view ? { x: 6, transition: { duration: 0.2 } } : {}}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => {
                     setCurrentView(item.view as View);
                     setIsMobileMenuOpen(false);
@@ -1936,18 +2191,167 @@ export default function Home() {
                     display: 'flex', alignItems: 'center', gap: '12px',
                     padding: '11px 14px', borderRadius: 'var(--radius)',
                     cursor: 'pointer', marginBottom: '3px', fontSize: '13px',
-                    background: currentView === item.view ? 'var(--primary)' : 'transparent',
+                    position: 'relative', overflow: 'hidden',
+                    background: currentView === item.view ? 'linear-gradient(135deg, var(--primary), rgba(179,16,32,0.9))' : 'transparent',
                     color: currentView === item.view ? 'white' : 'var(--text-secondary)',
                     fontWeight: currentView === item.view ? 700 : 500,
-                    transition: 'all 0.2s',
-                    boxShadow: currentView === item.view ? '0 4px 12px rgba(230,57,70,0.3)' : 'none'
+                    transition: 'background 0.25s, color 0.25s, box-shadow 0.25s',
+                    boxShadow: currentView === item.view ? '0 4px 15px rgba(230,57,70,0.3)' : 'none'
                   }}
                   className={currentView === item.view ? '' : 'nav-item-hover'}
                 >
-                  <span style={{ fontSize: '14px', opacity: currentView === item.view ? 1 : 0.7 }}>{item.icon}</span>
+                  {currentView === item.view && <div className="nav-active-indicator" />}
+                  <span style={{ fontSize: '14px', opacity: currentView === item.view ? 1 : 0.6, transition: 'opacity 0.2s' }}>{item.icon}</span>
                   <span>{item.label}</span>
+                  {currentView === item.view && (
+                    <motion.div 
+                      layoutId="nav-active-bg"
+                      style={{ position: 'absolute', inset: 0, background: 'rgba(230,57,70,0.05)', borderRadius: 'var(--radius)', zIndex: -1 }}
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
+                    />
+                  )}
                 </motion.div>
               ))}
+            </div>
+
+            {/* Sidebar Analytics Brief Section */}
+            <div className="sidebar-analytics">
+              <div className="sidebar-analytics-title">
+                <span>Analytics Brief</span>
+                {/* Live System Diagnostics Telemetry wave */}
+                <svg width="45" height="12" viewBox="0 0 45 12" style={{ opacity: 0.7 }}>
+                  <path 
+                    className="clinical-pulse-wave"
+                    d="M0 6 H15 L18 2 L22 10 L25 6 H45" 
+                    fill="none" 
+                    stroke="var(--primary)" 
+                    strokeWidth="1.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                  />
+                </svg>
+              </div>
+
+              {/* Patient Growth Sparkline */}
+              <div className="sidebar-analytics-chart-container">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-secondary)' }}>Patient Growth (7d)</span>
+                  <span style={{ fontSize: '10px', fontWeight: 800, color: 'white' }}>
+                    {patients.filter(p => !p.deleted).length} Total
+                  </span>
+                </div>
+                <div style={{ height: '60px', position: 'relative' }}>
+                  {(() => {
+                    const counts = patientGrowthData.map(d => d.count);
+                    const minVal = Math.min(...counts);
+                    const maxVal = Math.max(...counts);
+                    const diff = maxVal - minVal;
+                    const svgW = 200;
+                    const svgH = 60;
+                    
+                    const sparkPoints = patientGrowthData.map((pt, idx) => {
+                      const x = 10 + (idx * ((svgW - 20) / 6));
+                      const y = diff === 0 
+                        ? svgH / 2 
+                        : svgH - 10 - ((pt.count - minVal) / Math.max(diff, 1)) * (svgH - 20);
+                      return { x, y, ...pt };
+                    });
+
+                    const pathD = sparkPoints.map((pt, idx) => `${idx === 0 ? 'M' : 'L'} ${pt.x} ${pt.y}`).join(' ');
+                    const areaD = sparkPoints.length > 0 
+                      ? `${pathD} L ${sparkPoints[sparkPoints.length - 1].x} ${svgH} L ${sparkPoints[0].x} ${svgH} Z`
+                      : '';
+
+                    return (
+                      <svg width="100%" height="100%" viewBox={`0 0 ${svgW} ${svgH}`} style={{ overflow: 'visible' }}>
+                        <defs>
+                          <linearGradient id="sidebarSparkGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.25" />
+                            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
+                          </linearGradient>
+                        </defs>
+                        {areaD && <path d={areaD} fill="url(#sidebarSparkGradient)" />}
+                        {pathD && (
+                          <path 
+                            d={pathD} 
+                            fill="none" 
+                            stroke="var(--primary)" 
+                            strokeWidth="2" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                          />
+                        )}
+                        {sparkPoints.map((pt, idx) => (
+                          <circle 
+                            key={idx} 
+                            cx={pt.x} 
+                            cy={pt.y} 
+                            r="2.5" 
+                            fill="#0d0d0d" 
+                            stroke="var(--primary)" 
+                            strokeWidth="1.5" 
+                          />
+                        ))}
+                      </svg>
+                    );
+                  })()}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8px', color: 'var(--text-muted)', marginTop: '2px', padding: '0 4px' }}>
+                  <span>{patientGrowthData[0]?.dayLabel}</span>
+                  <span>{patientGrowthData[3]?.dayLabel}</span>
+                  <span>{patientGrowthData[6]?.dayLabel}</span>
+                </div>
+              </div>
+
+              {/* Assessment Share Doughnut */}
+              <div className="sidebar-analytics-chart-container">
+                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                  Assessment Share
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <svg width="50" height="50" viewBox="0 0 42 42" style={{ transform: 'rotate(-90deg)', flexShrink: 0 }}>
+                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="rgba(255,255,255,0.04)" strokeWidth="4" />
+                    {assessmentDistribution[0]?.label !== 'None' ? (
+                      assessmentDistribution.map((slice, idx) => {
+                        const prevSum = assessmentDistribution.slice(0, idx).reduce((sum, item) => sum + item.percentage, 0);
+                        const dashOffset = 100 - prevSum + 25;
+                        return (
+                          <circle
+                            key={idx}
+                            cx="21"
+                            cy="21"
+                            r="15.915"
+                            fill="transparent"
+                            stroke={slice.color}
+                            strokeWidth="4.5"
+                            strokeDasharray={`${slice.percentage} ${100 - slice.percentage}`}
+                            strokeDashoffset={dashOffset}
+                            strokeLinecap="round"
+                            style={{ transition: 'stroke-dashoffset 0.8s ease' }}
+                          />
+                        );
+                      })
+                    ) : (
+                      <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--text-muted)" strokeWidth="4.5" strokeDasharray="100 0" strokeDashoffset="25" />
+                    )}
+                  </svg>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
+                    {assessmentDistribution[0]?.label !== 'None' ? (
+                      assessmentDistribution.slice(0, 3).map((item, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '9px', gap: '4px' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+                            {item.label}
+                          </span>
+                          <span style={{ fontWeight: 700, color: 'white', flexShrink: 0 }}>{item.percentage}%</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No assessments logged yet</p>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Clinician Profile Footer */}
@@ -1994,6 +2398,15 @@ export default function Home() {
           {/* Main Area */}
           <div className="main-content">
             <header className="main-header">
+              {isMobile && (
+                <button 
+                  className="mobile-toggle btn btn-secondary btn-icon"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  style={{ marginRight: '12px', padding: '6px 10px', display: 'inline-flex', alignItems: 'center' }}
+                >
+                  <FaBars className="fa-bars" />
+                </button>
+              )}
               <div>
                 <h2 id="header-title" style={{ fontSize: '18px', color: 'white' }}>
                   {currentView === 'dashboard' && 'Dashboard'}
@@ -2038,7 +2451,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.2 }}
+                  transition={isTestEnv ? { duration: 0 } : { duration: 0.2 }}
                 >
                   {/* View: Dashboard */}
                   {currentView === 'dashboard' && (
@@ -2321,9 +2734,9 @@ export default function Home() {
                             <p style={{ fontSize: '20px', fontWeight: 600, color: 'white', lineHeight: 1.4 }}>
                               {ASSESSMENTS[activeScale].questions[currentQuestionIndex].text}
                             </p>
-                            {ASSESSMENTS[activeScale].questions[currentQuestionIndex].desc && (
+                            {(ASSESSMENTS[activeScale].questions[currentQuestionIndex] as any).desc && (
                               <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '8px' }}>
-                                {ASSESSMENTS[activeScale].questions[currentQuestionIndex].desc}
+                                {(ASSESSMENTS[activeScale].questions[currentQuestionIndex] as any).desc}
                               </p>
                             )}
                           </div>
@@ -2342,7 +2755,7 @@ export default function Home() {
                                   borderColor: answers[currentQuestionIndex] === opt.score ? 'var(--primary)' : 'var(--border)',
                                   transition: 'all 0.2s'
                                 }}
-                                className="q-option q-option-hover"
+                                className={`q-option q-option-hover ${answers[currentQuestionIndex] === opt.score ? 'selected' : ''}`}
                               >
                                 <span style={{
                                   width: '26px', height: '26px', borderRadius: '50%',
@@ -2441,16 +2854,24 @@ export default function Home() {
                           <div className="field">
                             <label>Clinician Notes (optional)</label>
                             <textarea 
+                              id="assess-notes"
                               placeholder="Input clinical notes, therapy adjustments, or medication response plan..."
                               value={assessmentNotes}
                               onChange={(e) => setAssessmentNotes(e.target.value)}
                             />
                             <button 
-                              className="btn btn-primary btn-sm" 
+                              className="btn btn-success btn-sm" 
                               style={{ alignSelf: 'flex-end', marginTop: '6px' }}
-                              onClick={() => saveAssessmentNotes(currentResult.record.id)}
+                              onClick={async () => {
+                                const updatedRecord = await saveAssessmentNotes(currentResult.record.id);
+                                if (updatedRecord) {
+                                  generateAssessmentPDF(updatedRecord);
+                                } else {
+                                  generateAssessmentPDF(currentResult.record);
+                                }
+                              }}
                             >
-                              Save Notes
+                              Save & Print PDF
                             </button>
                           </div>
                         </div>
@@ -2663,7 +3084,7 @@ export default function Home() {
                                           setAssessmentNotes(assess.notes || '');
                                           setCurrentView('assessment-result');
                                         }}>
-                                          <FaEye /> Detail
+                                          <FaEye /> View
                                         </button>
                                         <button className="btn btn-danger btn-sm" onClick={() => handleDeleteAssessment(assess.id)}>
                                           <FaTrash />
@@ -3257,5 +3678,6 @@ export default function Home() {
         )}
       </AnimatePresence>
     </div>
+    </MotionConfig>
   );
 }

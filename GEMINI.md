@@ -27,6 +27,7 @@ This document defines the foundational mandates and architectural constraints fo
 -   **Modal Form Submission Integrity:** Asynchronous modal form submissions MUST read DOM values synchronously prior to executing any async tasks. This prevents race conditions when the modal is closed concurrently.
 -   **Immersive Authentication:** The login and registration experience MUST be perfectly centered using the `.auth-overlay` Flexbox pattern with a `backdrop-filter: blur(8px)` to ensure professional clinical focus.
 -   **Dynamic Staggering:** All primary overview components (dashboard cards, navigation items) MUST utilize staggered entrance animations to improve perceived performance and interactivity.
+-   **E2E Motion Snapping:** Any layout component or card utilizing transitions or animations (Framer Motion, CSS, or GSAP) MUST conditionally bypass all motion/delay attributes and snap to their target values instantly in zero seconds during Playwright/automated testing (`isTestEnv` state based on `navigator.webdriver` is true). This ensures click stability and accurate bounding-box alignment verification.
 
 ## 5. Security & Privacy
 -   **Zero Leakage:** Never log or print Patient Identifiable Information (PII) in console logs or error reports.

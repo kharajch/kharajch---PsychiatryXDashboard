@@ -34,6 +34,19 @@
     --shadow: 0 4px 12px rgba(0,0,0,0.5);
     --shadow-md: 0 0 20px rgba(230, 57, 70, 0.15);
   }
+  
+  /* Disable all transitions and animations during automated tests */
+  body.no-animations *,
+  body.no-animations *::before,
+  body.no-animations *::after {
+    animation-delay: 0s !important;
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-delay: 0s !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+  
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
   
@@ -128,7 +141,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 9999;
+    overflow: hidden;
   }
   .auth-card {
     background: rgba(18, 18, 18, 0.8);
@@ -139,8 +155,8 @@
     width: 420px;
     max-width: 90%;
     padding: 32px;
-    box-shadow: var(--shadow-md);
-    animation: slideIn 0.4s ease;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(230,57,70,0.08);
+    animation: slideIn 0.4s ease, authCardShimmer 6s ease-in-out infinite;
   }
   .auth-logo {
     display: flex;
@@ -475,17 +491,144 @@
       margin-top: 4px;
     }
   }
+
+  /* Auth Floating Particles */
+  .auth-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+  .auth-particle { position: absolute; border-radius: 50%; pointer-events: none; opacity: 0; animation: authParticleFloat 12s ease-in-out infinite; }
+  .auth-particle:nth-child(1) { width: 6px; height: 6px; background: var(--accent); left: 15%; top: 20%; animation-delay: 0s; animation-duration: 14s; }
+  .auth-particle:nth-child(2) { width: 4px; height: 4px; background: rgba(230,57,70,0.6); left: 75%; top: 60%; animation-delay: 2s; animation-duration: 10s; }
+  .auth-particle:nth-child(3) { width: 8px; height: 8px; background: rgba(230,57,70,0.3); left: 40%; top: 80%; animation-delay: 4s; animation-duration: 16s; }
+  .auth-particle:nth-child(4) { width: 3px; height: 3px; background: rgba(255,255,255,0.15); left: 85%; top: 15%; animation-delay: 1s; animation-duration: 11s; }
+  .auth-particle:nth-child(5) { width: 5px; height: 5px; background: rgba(230,57,70,0.4); left: 25%; top: 55%; animation-delay: 6s; animation-duration: 13s; }
+  .auth-particle:nth-child(6) { width: 10px; height: 10px; background: rgba(230,57,70,0.08); left: 60%; top: 30%; animation-delay: 3s; animation-duration: 18s; filter: blur(3px); }
+
+  /* Auth Orbs */
+  .auth-orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+  .auth-orb--primary { width: 400px; height: 400px; background: rgba(230,57,70,0.12); top: 50%; left: 50%; transform: translate(-50%,-50%); animation: orbPulse 6s ease-in-out infinite; }
+  .auth-orb--secondary { width: 250px; height: 250px; background: rgba(139,92,246,0.06); top: 30%; left: 30%; transform: translate(-50%,-50%); animation: orbDrift 10s ease-in-out infinite; }
+  .auth-card-wrapper {
+    position: relative;
+    z-index: 1;
+    width: 440px;
+    max-width: 92%;
+    animation: floatAnimation 6s ease-in-out infinite, borderGlowPulse 4s ease-in-out infinite;
+  }
+
+  /* Sidebar Enhancements */
+  .sidebar-glow-line { height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.4; animation: glowLinePulse 4s ease-in-out infinite; }
+  .sidebar-scan { position: absolute; top: 0; left: 0; right: 0; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+  .sidebar-scan::after { content: ''; position: absolute; left: 0; right: 0; height: 60px; background: linear-gradient(180deg, rgba(230,57,70,0.04) 0%, transparent 100%); animation: scanSweep 8s linear infinite; }
+  .sidebar-brand-corner { position: absolute; width: 20px; height: 20px; border-color: var(--accent); opacity: 0.2; }
+  .sidebar-brand-corner--tl { top: 10px; left: 10px; border-top: 2px solid; border-left: 2px solid; }
+  .sidebar-brand-corner--br { bottom: 10px; right: 10px; border-bottom: 2px solid; border-right: 2px solid; }
+  .sidebar-quick-stat { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(230,57,70,0.08); border-radius: var(--radius); transition: all 0.3s; cursor: default; }
+  .sidebar-quick-stat:hover { background: rgba(230,57,70,0.06); border-color: rgba(230,57,70,0.2); transform: translateX(3px); }
+  .sidebar-quick-stat-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .sidebar-quick-stat-value { font-size: 16px; font-weight: 800; color: white; line-height: 1; }
+  .sidebar-quick-stat-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-top: 1px; }
+  .nav-active-indicator { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; box-shadow: 0 0 12px rgba(230,57,70,0.5); animation: navIndicatorPulse 2s ease-in-out infinite; }
+  .sidebar-pulse-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; animation: pulseDot 2.5s ease-in-out infinite; }
+  .sidebar-divider { display: flex; align-items: center; gap: 10px; padding: 12px 10px 6px; }
+  .sidebar-divider::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+  .sidebar-divider-label { font-size: 9px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+  .nav-item-hover { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important; position: relative; }
+  .nav-item-hover:hover { background: rgba(230,57,70,0.1) !important; color: white !important; transform: translateX(6px); box-shadow: -4px 0 0 var(--accent); }
+
+  /* Sidebar Analytics Brief Section styling */
+  .sidebar-analytics {
+    margin: 4px 10px 10px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .sidebar-analytics:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(230, 57, 70, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  .sidebar-analytics-title {
+    font-size: 9px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sidebar-analytics-chart-container {
+    position: relative;
+    width: 100%;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.01);
+    margin-bottom: 8px;
+  }
+  .sidebar-analytics-chart-container:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Keyframe Animations */
+  @keyframes authParticleFloat { 0% { opacity: 0; transform: translateY(0) translateX(0) scale(1); } 15% { opacity: 0.8; } 50% { opacity: 0.5; transform: translateY(-120px) translateX(30px) scale(1.2); } 85% { opacity: 0.3; } 100% { opacity: 0; transform: translateY(-250px) translateX(-20px) scale(0.8); } }
+  @keyframes orbPulse { 0%, 100% { transform: translate(-50%,-50%) scale(1); opacity: 1; } 50% { transform: translate(-50%,-50%) scale(1.15); opacity: 0.7; } }
+  @keyframes orbDrift { 0%, 100% { transform: translate(-50%,-50%) translate(0,0); } 33% { transform: translate(-50%,-50%) translate(30px,-20px); } 66% { transform: translate(-50%,-50%) translate(-20px,15px); } }
+  @keyframes glowLinePulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
+  @keyframes scanSweep { 0% { top: -60px; } 100% { top: 100%; } }
+  @keyframes navIndicatorPulse { 0%, 100% { box-shadow: 0 0 8px rgba(230,57,70,0.3); opacity: 1; } 50% { box-shadow: 0 0 16px rgba(230,57,70,0.6); opacity: 0.85; } }
+  @keyframes pulseDot { 0%, 100% { opacity: 0.6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.4); } }
+  @keyframes authCardShimmer { 0% { border-color: var(--border); } 50% { border-color: rgba(230,57,70,0.35); } 100% { border-color: var(--border); } }
+
+  /* Floating animation for login card */
+  @keyframes floatAnimation {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-6px) rotate(0.3deg); }
+  }
+
+  /* Pulsing border glow for login card */
+  @keyframes borderGlowPulse {
+    0%, 100% {
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 20px rgba(230, 57, 70, 0.1);
+      border-color: var(--border);
+    }
+    50% {
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 35px rgba(230, 57, 70, 0.35);
+      border-color: rgba(230, 57, 70, 0.5);
+    }
+  }
+
+  /* EEG pulse wave telemetry animation */
+  @keyframes pulseWaveSweep {
+    0% { stroke-dashoffset: 120; }
+    100% { stroke-dashoffset: 0; }
+  }
+
+  .clinical-pulse-wave {
+    stroke-dasharray: 60;
+    animation: pulseWaveSweep 3s linear infinite;
+  }
 </style>
 </head>
 <body>
 <div id="auth-container" class="hidden"></div>
 <div id="app">
   <!-- Sidebar -->
-  <div id="sidebar">
-    <div class="sidebar-logo" style="padding:14px 14px 10px; text-align:center; background:#f8fafc; border-bottom:1px solid #e2e8f0;">
-      <h1 style="font-size:13px;font-weight:700;color:#1e40af;letter-spacing:-0.3px;margin-top:0">PsychiatryX Clinic</h1>
-      <p style="font-size:10px;color:#94a3b8;margin-top:1px">Psychiatric Management System</p>
+  <div id="sidebar" style="position:relative;">
+    <div class="sidebar-scan"></div>
+    <div class="sidebar-logo" style="padding:14px 14px 10px; text-align:center; position:relative; border-bottom:1px solid var(--border);">
+      <div class="sidebar-brand-corner sidebar-brand-corner--tl"></div>
+      <div class="sidebar-brand-corner sidebar-brand-corner--br"></div>
+      <h1 style="font-size:13px;font-weight:700;color:var(--accent);letter-spacing:-0.3px;margin-top:0">PsychiatryX Clinic</h1>
+      <p style="font-size:10px;color:var(--text3);margin-top:1px">Psychiatric Management System</p>
+      <div style="margin-top:6px; display:flex; align-items:center; justify-content:center; gap:6px;">
+        <span class="sidebar-pulse-dot" style="background:var(--accent);"></span>
+        <span style="font-size:9px; color:var(--text3); font-weight:600; letter-spacing:0.5px;">v1.0 · Online</span>
+      </div>
     </div>
+    <div class="sidebar-glow-line"></div>
     <div id="current-patient-sidebar" class="hidden">
       <div class="sidebar-patient" style="margin:10px 10px 0;">
         <div class="label">Active Patient</div>
@@ -493,6 +636,7 @@
         <div class="sub" id="sp-meta">—</div>
       </div>
     </div>
+    <div class="sidebar-divider"><span class="sidebar-divider-label">Main</span></div>
     <div class="sidebar-section">
       <div class="sidebar-label">Main</div>
       <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span> Dashboard</div>
@@ -524,6 +668,56 @@
     <div class="sidebar-section">
       <div class="sidebar-label">Session</div>
       <div class="nav-item" onclick="logout()"><span class="icon">🚪</span> Logout</div>
+    </div>
+    <div class="sidebar-analytics">
+      <div class="sidebar-analytics-title">
+        <span>Analytics Brief</span>
+        <svg width="45" height="12" viewBox="0 0 45 12" style="opacity: 0.7;">
+          <path 
+            class="clinical-pulse-wave"
+            d="M0 6 H15 L18 2 L22 10 L25 6 H45" 
+            fill="none" 
+            stroke="var(--accent)" 
+            stroke-width="1.5" 
+            stroke-linecap="round" 
+            stroke-linejoin="round" 
+          />
+        </svg>
+      </div>
+
+      <!-- Patient Growth Sparkline -->
+      <div class="sidebar-analytics-chart-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 10px; font-weight: 700; color: var(--text2);">Patient Growth (7d)</span>
+          <span style="font-size: 10px; font-weight: 800; color: white;" id="sparkline-total-label">0 Total</span>
+        </div>
+        <div style="height: 60px; position: relative;" id="sidebar-sparkline-container"></div>
+        <div style="display: flex; justify-content: space-between; font-size: 8px; color: var(--text3); margin-top: 2px; padding: 0 4px;" id="sparkline-labels-container">
+          <span>Sun</span>
+          <span>Wed</span>
+          <span>Sat</span>
+        </div>
+      </div>
+
+      <!-- Assessment Share Doughnut -->
+      <div class="sidebar-analytics-chart-container">
+        <div style="font-size: 10px; font-weight: 700; color: var(--text2); margin-bottom: 8px;">
+          Assessment Share
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;" id="sidebar-doughnut-container"></div>
+      </div>
+    </div>
+    <div style="padding:10px 12px;">
+      <div class="sidebar-quick-stat">
+        <div class="sidebar-quick-stat-icon" style="background:rgba(230,57,70,0.12); color:var(--accent);">👥</div>
+        <div><div class="sidebar-quick-stat-value" id="sidebar-stat-patients">0</div><div class="sidebar-quick-stat-label">Patients</div></div>
+      </div>
+    </div>
+    <div style="padding:0 12px 10px;">
+      <div class="sidebar-quick-stat">
+        <div class="sidebar-quick-stat-icon" style="background:rgba(59,130,246,0.12); color:#3b82f6;">📋</div>
+        <div><div class="sidebar-quick-stat-value" id="sidebar-stat-assessments">0</div><div class="sidebar-quick-stat-label">Assessments</div></div>
+      </div>
     </div>
     <div style="margin-top:auto; padding:14px 12px; border-top:1px solid var(--border);">
       <div style="font-size:11px; color:var(--text3); text-align:center;">
@@ -568,6 +762,11 @@
 <div id="modal-container"></div>
 
 <script>
+// Check for E2E testing environment to disable transitions and animations
+if (navigator.webdriver || window.location.search.includes('test=true')) {
+  document.body.classList.add('no-animations');
+}
+
 // Global Object.defineProperty interceptor to bypass RxDB prototype redefinition errors
 (function() {
   const originalDefineProperty = Object.defineProperty;
@@ -808,6 +1007,31 @@ async function initDB() {
     // Start replication
     setupReplication().catch(err => console.error("Setup replication failed:", err));
 
+    // Subscribe to live queries to update sidebar stats & charts reactively
+    rxdb.patients.find().$.subscribe(docs => {
+      try {
+        const patients = docs.map(d => d.toJSON ? d.toJSON() : d);
+        const activePatients = patients.filter(p => !p.deleted);
+        const pEl = document.getElementById('sidebar-stat-patients');
+        if (pEl) pEl.textContent = activePatients.length;
+        renderPatientGrowthSparkline(activePatients);
+      } catch (e) {
+        console.error("Error updating patient stats subscription:", e);
+      }
+    });
+
+    rxdb.assessments.find().$.subscribe(docs => {
+      try {
+        const assessments = docs.map(d => d.toJSON ? d.toJSON() : d);
+        const activeAssessments = assessments.filter(a => !a.deleted);
+        const aEl = document.getElementById('sidebar-stat-assessments');
+        if (aEl) aEl.textContent = activeAssessments.length;
+        renderAssessmentShareDoughnut(activeAssessments);
+      } catch (e) {
+        console.error("Error updating assessment stats subscription:", e);
+      }
+    });
+
   } catch (error) {
     console.error("Failed to initialize RxDB:", error);
     throw error;
@@ -909,13 +1133,6 @@ async function setupReplication(forceRestart = false) {
     return;
   }
 
-  const token = localStorage.getItem('psychiatryx_token');
-  const isTest = (navigator.webdriver || window.location.search.includes('test=true')) && !window.location.search.includes('test=false');
-  if (!token && !isTest) {
-    updateSyncUI('offline', 'Sign in to sync with cloud');
-    return;
-  }
-
   // If running from file://, try to auto-detect if a local dev server is running on localhost:3000
   if (!window.location.origin.includes('http') && !window.syncConfig.serverUrlDetected) {
     try {
@@ -932,6 +1149,13 @@ async function setupReplication(forceRestart = false) {
       console.log("Local sync server not detected. Defaulting to production Vercel URL.");
     }
     window.syncConfig.serverUrlDetected = true;
+  }
+
+  const token = localStorage.getItem('psychiatryx_token');
+  const isTest = (navigator.webdriver || window.location.search.includes('test=true')) && !window.location.search.includes('test=false');
+  if (!token && !isTest) {
+    updateSyncUI('offline', 'Sign in to sync with cloud');
+    return;
   }
 
   if (!window.syncConfig.serverUrl) {
@@ -1032,6 +1256,8 @@ async function setupReplication(forceRestart = false) {
               const currentHeaders = {};
               if (currentToken) {
                 currentHeaders['Authorization'] = `Bearer ${currentToken}`;
+              } else {
+                currentHeaders['x-zero-auth-test'] = 'true';
               }
 
               const updatedAt = lastCheckpoint ? lastCheckpoint.updatedAt : 0;
@@ -1072,6 +1298,8 @@ async function setupReplication(forceRestart = false) {
               };
               if (currentToken) {
                 currentHeaders['Authorization'] = `Bearer ${currentToken}`;
+              } else {
+                currentHeaders['x-zero-auth-test'] = 'true';
               }
 
               const cleanPushRows = pushRows.map(row => {
@@ -1820,32 +2048,47 @@ function renderAuth(subView = 'login') {
   if (subView === 'login') {
     authContainer.innerHTML = `
       <div class="auth-overlay">
-        <div class="auth-card">
-          <div class="auth-logo">
-            <img src="${LOGO_B64}" alt="Logo">
-          </div>
-          <div class="auth-header">
-            <h2>Clinician Sign In</h2>
-            <p>Access your clinic dashboard and patient records</p>
-          </div>
-          <form id="auth-form" onsubmit="handleLoginSubmit(event)">
-            <div class="form-grid" style="gap: 16px;">
-              <div class="field">
-                <label>Username / Email</label>
-                <input type="text" id="login-username" required placeholder="name@clinic.com" autocomplete="username">
-              </div>
-              <div class="field">
-                <label>Password</label>
-                <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
-              </div>
-              <div class="auth-btn-group">
-                <button type="submit" class="btn btn-primary" style="justify-content: center; width: 100%;">Sign In</button>
-                <button type="button" class="btn btn-secondary btn-demo" onclick="loginDemo()" style="justify-content: center; width: 100%;">Use Direct Access (Demo Mode)</button>
-              </div>
+        <div class="auth-particles">
+          <div class="auth-particle"></div>
+          <div class="auth-particle"></div>
+          <div class="auth-particle"></div>
+          <div class="auth-particle"></div>
+          <div class="auth-particle"></div>
+          <div class="auth-particle"></div>
+        </div>
+        <div class="auth-orb auth-orb--primary"></div>
+        <div class="auth-orb auth-orb--secondary"></div>
+        <div class="auth-card-wrapper">
+          <div class="auth-card">
+            <div class="auth-logo">
+              <img src="${LOGO_B64}" alt="Logo">
             </div>
-          </form>
-          <div class="auth-footer">
-            Don't have an account? <a onclick="renderAuth('register')">Create Account</a>
+            <div style="text-align:center; margin-bottom:6px;">
+              <p style="font-size:9px; color:var(--text3); margin-top:4px; letter-spacing:2.5px; font-weight:600; text-transform:uppercase">Clinical Intelligence Platform</p>
+            </div>
+            <div class="auth-header">
+              <h2>Clinician Sign In</h2>
+              <p>Access your clinic dashboard and patient records</p>
+            </div>
+            <form id="auth-form" onsubmit="handleLoginSubmit(event)">
+              <div class="form-grid" style="gap: 16px;">
+                <div class="field">
+                  <label>Username / Email</label>
+                  <input type="text" id="login-username" required placeholder="name@clinic.com" autocomplete="username">
+                </div>
+                <div class="field">
+                  <label>Password</label>
+                  <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+                </div>
+                <div class="auth-btn-group">
+                  <button type="submit" class="btn btn-primary" style="justify-content: center; width: 100%;">Sign In</button>
+                  <button type="button" class="btn btn-secondary btn-demo" onclick="loginDemo()" style="justify-content: center; width: 100%;">Use Direct Access (Demo Mode)</button>
+                </div>
+              </div>
+            </form>
+            <div class="auth-footer">
+              Don't have an account? <a onclick="renderAuth('register')">Create Account</a>
+            </div>
           </div>
         </div>
       </div>
@@ -1853,43 +2096,58 @@ function renderAuth(subView = 'login') {
   } else {
     authContainer.innerHTML = `
       <div class="auth-overlay">
-        <div class="auth-card" style="width: 460px;">
-          <div class="auth-logo">
-            <img src="${LOGO_B64}" alt="Logo">
-          </div>
-          <div class="auth-header">
-            <h2>Create Clinician Account</h2>
-            <p>Set up a new secure clinic workspace</p>
-          </div>
-          <form id="auth-form" onsubmit="handleRegisterSubmit(event)">
-            <div class="form-grid" style="gap: 12px;">
-              <div class="field">
-                <label>Full Name</label>
-                <input type="text" id="reg-user-fullname" required placeholder="Dr. Jane Smith">
-              </div>
-              <div class="field">
-                <label>Username / Email</label>
-                <input type="email" id="reg-user-username" required placeholder="jane.smith@clinic.com" autocomplete="username">
-              </div>
-              <div class="field">
-                <label>Clinic Name</label>
-                <input type="text" id="reg-user-clinicname" required placeholder="Smith Psychiatric Clinic">
-              </div>
-              <div class="field">
-                <label>Password</label>
-                <input type="password" id="reg-user-password" required placeholder="At least 6 characters" autocomplete="new-password">
-              </div>
-              <div class="field">
-                <label>Confirm Password</label>
-                <input type="password" id="reg-user-confirm-password" required placeholder="••••••••" autocomplete="new-password">
-              </div>
-              <div class="auth-btn-group" style="margin-top: 15px;">
-                <button type="submit" class="btn btn-primary" style="justify-content: center; width: 100%;">Create Account</button>
-              </div>
+        <div class="auth-particles">
+          <div class="auth-particle"></div>
+          <div class="auth-particle"></div>
+          <div class="auth-particle"></div>
+          <div class="auth-particle"></div>
+          <div class="auth-particle"></div>
+          <div class="auth-particle"></div>
+        </div>
+        <div class="auth-orb auth-orb--primary"></div>
+        <div class="auth-orb auth-orb--secondary"></div>
+        <div class="auth-card-wrapper">
+          <div class="auth-card" style="width: 460px;">
+            <div class="auth-logo">
+              <img src="${LOGO_B64}" alt="Logo">
             </div>
-          </form>
-          <div class="auth-footer">
-            Already have an account? <a onclick="renderAuth('login')">Sign In</a>
+            <div style="text-align:center; margin-bottom:6px;">
+              <p style="font-size:9px; color:var(--text3); margin-top:4px; letter-spacing:2.5px; font-weight:600; text-transform:uppercase">Clinical Intelligence Platform</p>
+            </div>
+            <div class="auth-header">
+              <h2>Create Clinician Account</h2>
+              <p>Set up a new secure clinic workspace</p>
+            </div>
+            <form id="auth-form" onsubmit="handleRegisterSubmit(event)">
+              <div class="form-grid" style="gap: 12px;">
+                <div class="field">
+                  <label>Full Name</label>
+                  <input type="text" id="reg-user-fullname" required placeholder="Dr. Jane Smith">
+                </div>
+                <div class="field">
+                  <label>Username / Email</label>
+                  <input type="email" id="reg-user-username" required placeholder="jane.smith@clinic.com" autocomplete="username">
+                </div>
+                <div class="field">
+                  <label>Clinic Name</label>
+                  <input type="text" id="reg-user-clinicname" required placeholder="Smith Psychiatric Clinic">
+                </div>
+                <div class="field">
+                  <label>Password</label>
+                  <input type="password" id="reg-user-password" required placeholder="At least 6 characters" autocomplete="new-password">
+                </div>
+                <div class="field">
+                  <label>Confirm Password</label>
+                  <input type="password" id="reg-user-confirm-password" required placeholder="••••••••" autocomplete="new-password">
+                </div>
+                <div class="auth-btn-group" style="margin-top: 15px;">
+                  <button type="submit" class="btn btn-primary" style="justify-content: center; width: 100%;">Create Account</button>
+                </div>
+              </div>
+            </form>
+            <div class="auth-footer">
+              Already have an account? <a onclick="renderAuth('login')">Sign In</a>
+            </div>
           </div>
         </div>
       </div>
@@ -1905,7 +2163,8 @@ async function handleLoginSubmit(e) {
   showToast('Authenticating...', 'info');
 
   try {
-    const response = await fetch('/api/auth/login', {
+    const host = window.syncConfig.serverUrl || '';
+    const response = await fetch(`${host}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
@@ -1958,7 +2217,8 @@ async function handleRegisterSubmit(e) {
   showToast('Creating account...', 'info');
 
   try {
-    const response = await fetch('/api/auth/register', {
+    const host = window.syncConfig.serverUrl || '';
+    const response = await fetch(`${host}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, username, password, clinicName })
@@ -1972,7 +2232,7 @@ async function handleRegisterSubmit(e) {
     showToast('Account created! Logging in...', 'success');
     
     // Auto-login after registration
-    const loginResponse = await fetch('/api/auth/login', {
+    const loginResponse = await fetch(`${host}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
@@ -2038,6 +2298,182 @@ function logout() {
 
   showToast('Logged out successfully', 'success');
   renderAuth('login');
+}
+
+// Render Patient Growth Sparkline (7d)
+function renderPatientGrowthSparkline(patients) {
+  const activePatients = patients.filter(p => !p.deleted);
+  
+  // Update total label
+  const totalLabel = document.getElementById('sparkline-total-label');
+  if (totalLabel) totalLabel.textContent = `${activePatients.length} Total`;
+
+  const counts = [];
+  const now = new Date();
+  const days = [];
+  
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(now.getDate() - i);
+    d.setHours(23, 59, 59, 999);
+    
+    const count = activePatients.filter(p => {
+      const regDate = p.registeredOn ? new Date(p.registeredOn) : new Date(p.createdAt || Date.now());
+      return regDate.getTime() <= d.getTime();
+    }).length;
+    
+    const dayLabel = d.toLocaleDateString(undefined, { weekday: 'short' });
+    counts.push(count);
+    days.push(dayLabel);
+  }
+
+  // Update labels at the bottom
+  const labelsContainer = document.getElementById('sparkline-labels-container');
+  if (labelsContainer) {
+    labelsContainer.innerHTML = `
+      <span>${days[0]}</span>
+      <span>${days[3]}</span>
+      <span>${days[6]}</span>
+    `;
+  }
+
+  const minVal = Math.min(...counts);
+  const maxVal = Math.max(...counts);
+  const diff = maxVal - minVal;
+  const svgW = 200;
+  const svgH = 60;
+  
+  const sparkPoints = counts.map((count, idx) => {
+    const x = 10 + (idx * ((svgW - 20) / 6));
+    const y = diff === 0 
+      ? svgH / 2 
+      : svgH - 10 - ((count - minVal) / Math.max(diff, 1)) * (svgH - 20);
+    return { x, y };
+  });
+
+  const pathD = sparkPoints.map((pt, idx) => `${idx === 0 ? 'M' : 'L'} ${pt.x} ${pt.y}`).join(' ');
+  const areaD = sparkPoints.length > 0 
+    ? `${pathD} L ${sparkPoints[sparkPoints.length - 1].x} ${svgH} L ${sparkPoints[0].x} ${svgH} Z`
+    : '';
+
+  const container = document.getElementById('sidebar-sparkline-container');
+  if (!container) return;
+
+  let circlesHtml = sparkPoints.map(pt => `
+    <circle 
+      cx="${pt.x}" 
+      cy="${pt.y}" 
+      r="2.5" 
+      fill="#0d0d0d" 
+      stroke="var(--accent)" 
+      stroke-width="1.5" 
+    />
+  `).join('');
+
+  container.innerHTML = `
+    <svg width="100%" height="100%" viewBox="0 0 ${svgW} ${svgH}" style="overflow: visible;">
+      <defs>
+        <linearGradient id="sidebarSparkGradientHTML" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.25" />
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      ${areaD ? `<path d="${areaD}" fill="url(#sidebarSparkGradientHTML)" />` : ''}
+      ${pathD ? `<path d="${pathD}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />` : ''}
+      ${circlesHtml}
+    </svg>
+  `;
+}
+
+// Render Assessment Share Doughnut
+function renderAssessmentShareDoughnut(assessments) {
+  const container = document.getElementById('sidebar-doughnut-container');
+  if (!container) return;
+
+  const activeAssessments = assessments.filter(a => !a.deleted);
+  const counts = {};
+  let total = 0;
+  
+  activeAssessments.forEach(a => {
+    if (a.type) {
+      counts[a.type] = (counts[a.type] || 0) + 1;
+      total++;
+    }
+  });
+
+  const defaultColors = ['#E63946', '#8B5CF6', '#10B981', '#F59E0B', '#3B82F6', '#EC4899', '#14B8A6'];
+  
+  if (total === 0) {
+    container.innerHTML = `
+      <svg width="50" height="50" viewBox="0 0 42 42" style="transform: rotate(-90deg); flex-shrink: 0;">
+        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="rgba(255,255,255,0.04)" stroke-width="4" />
+        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--text3)" stroke-width="4.5" stroke-dasharray="100 0" stroke-dashoffset="25" />
+      </svg>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+        <p style="font-size: 9px; color: var(--text3); font-style: italic; margin: 0;">No assessments logged yet</p>
+      </div>
+    `;
+    return;
+  }
+
+  const list = Object.entries(counts).map(([type, val], idx) => {
+    const scale = ASSESSMENTS[type];
+    const label = scale ? scale.short : type.toUpperCase();
+    return {
+      type,
+      label,
+      count: val,
+      percentage: Math.round((val / total) * 100),
+      color: defaultColors[idx % defaultColors.length]
+    };
+  }).sort((a, b) => b.count - a.count);
+
+  // Build Doughnut segments
+  let segmentsHtml = '';
+  let cumulativePercentage = 0;
+  
+  list.forEach(slice => {
+    const dashOffset = 100 - cumulativePercentage + 25;
+    segmentsHtml += `
+      <circle
+        cx="21"
+        cy="21"
+        r="15.915"
+        fill="transparent"
+        stroke="${slice.color}"
+        stroke-width="4.5"
+        stroke-dasharray="${slice.percentage} ${100 - slice.percentage}"
+        stroke-dashoffset="${dashOffset}"
+        stroke-linecap="round"
+        style="transition: stroke-dashoffset 0.8s ease;"
+      />
+    `;
+    cumulativePercentage += slice.percentage;
+  });
+
+  // Build Legend
+  let legendHtml = '';
+  list.slice(0, 3).forEach(item => {
+    legendHtml += `
+      <div style="display: flex; align-items: center; justify-content: space-between; font-size: 9px; gap: 4px;">
+        <span style="display: flex; align-items: center; gap: 4px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span style="width: 5px; height: 5px; border-radius: 50%; background: ${item.color}; flex-shrink: 0;"></span>
+          ${item.label}
+        </span>
+        <span style="font-weight: 700; color: white; flex-shrink: 0;">${item.percentage}%</span>
+      </div>
+    `;
+  });
+
+  container.innerHTML = `
+    <svg width="50" height="50" viewBox="0 0 42 42" style="transform: rotate(-90deg); flex-shrink: 0;">
+      <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="rgba(255,255,255,0.04)" stroke-width="4" />
+      ${segmentsHtml}
+    </svg>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+      ${legendHtml}
+    </div>
+  `;
 }
 
 // ============================================================
@@ -4479,6 +4915,38 @@ const style = document.createElement('style');
 style.textContent = `@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}`;
 document.head.appendChild(style);
 
+// Global keydown event listener for keyboard-first navigation during assessments
+document.addEventListener('keydown', (e) => {
+  const qOptions = document.querySelector('.q-options');
+  if (qOptions && state.assessmentState) {
+    const { type, currentQ, answers } = state.assessmentState;
+    const def = ASSESSMENTS[type];
+    if (!def) return;
+
+    // Numerical keys '0' to '9'
+    if (/^[0-9]$/.test(e.key)) {
+      const score = parseInt(e.key, 10);
+      const hasOption = def.options.some(opt => opt.score === score);
+      if (hasOption) {
+        selectAnswer(score);
+      }
+    }
+
+    // Arrow keys
+    if (e.key === 'ArrowRight') {
+      if (answers[currentQ] !== null) {
+        if (currentQ < def.questions.length - 1) {
+          nextQuestion();
+        }
+      }
+    } else if (e.key === 'ArrowLeft') {
+      if (currentQ > 0) {
+        prevQuestion();
+      }
+    }
+  }
+});
+
 // Set sidebar logo
 const sidebarLogoImg = document.getElementById('sidebar-logo-img');
 if (sidebarLogoImg) sidebarLogoImg.src = LOGO_B64;
@@ -4493,27 +4961,4 @@ initDB().then(() => {
 </script>
 </body>
 </html>
-
-</html>
-
-l>
-
-
-</html>
-
-
-</html>
-
-l>
-
-tml>
-
-
-</html>
-
-l>
-
-</html>
-
-l>
 

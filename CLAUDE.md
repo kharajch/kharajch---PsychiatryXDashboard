@@ -1,60 +1,42 @@
-# Developer Guide: PsychiatryX Dashboard
+# Claude Developer Guide: PsychiatryX Dashboard
 
-This guide provides technical instructions for the development environment, build processes, and testing workflows.
+This document details the build, test, and code conventions for the PsychiatryX Dashboard project.
 
-## 🛠️ Commands
+## 🛠️ Build & Run Commands
 
-- **Development:** `npm run dev` (Starts Next.js at localhost:3000)
-- **Build:** `npm run build`
-- **Lint:** `npm run lint` (ESLint 9)
-- **Validate DB Connection:** `node scripts/test-db.js` (Tests MongoDB Atlas connection details)
-- **Seed Development Data:** `curl http://localhost:3000/api/dev/seed` (Creates admin/password123 and test data)
-- **Test:** `npx playwright test` (Runs all E2E and unit tests)
-- **Specific Test:** `npx playwright test test/api-sync.spec.ts`
-- **Auth E2E Test:** `npx playwright test test/auth-flows.spec.ts` (Validates registration, login, and auth guard overlays)
+| Command | Action |
+| :--- | :--- |
+| `npm run dev` | Starts the Next.js development server on `http://127.0.0.1:3000`. |
+| `npm run build` | Compiles the Next.js application for production. |
+| `npm run start` | Serves the built Next.js application. |
+| `npm run lint` | Runs the ESLint checker. |
 
-## 💻 Environment Setup
+### Standalone HTML Client
+- To run the standalone local client, open [PsychiatryX_Dashboard.html](file:///K:/Codes/Web%20Devlopment/My%20Projects/kharajch---PsychiatryXDashboard/PsychiatryX_Dashboard.html) directly in any modern browser.
 
-### Prerequisites
-- **Node.js:** v18 or higher (v20 recommended)
-- **MongoDB:** v6.0 or higher (MongoDB Atlas recommended). Requires a connection string with read/write permissions.
-- **Browser:** Modern Chrome/Firefox for RxDB (IndexedDB) support.
+---
 
-### Environment Variables (.env)
-```env
-MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/PsychiatryX?retryWrites=true&w=majority
-DEFAULT_CLINIC_ID=demo-clinic-123
-```
-*Note: NextAuth variables (NEXTAUTH_SECRET, NEXTAUTH_URL) are optional for local and open-source deployments. The system defaults to 'Direct Access' clinician sessions, and the login API provides a development fallback secret to prevent crashes if NEXTAUTH_SECRET is missing.*
+## 🧪 Testing Commands
 
-## 📐 Architecture Patterns
+The project uses Playwright for E2E and unit testing.
 
-- **Models:** Mongoose models are located in `lib/models/`.
-- **API Routes:** Next.js App Router API routes are in `app/api/`.
-- **Synchronization:** The core sync logic is located in `app/api/sync/[collection]/route.ts`.
-- **Local Dashboard:** The standalone file `PsychiatryX_Dashboard.html` uses zero-config automated sync logic. On HTTP/HTTPS origins it connects back to its host origin. On the `file://` protocol, it probes `http://localhost:3000` (600ms timeout) for a running local dev server, falling back to Vercel production if offline. When no valid sync token is found in localStorage, the dashboard displays a Cloud Sync login modal to prompt for credentials. Manual server URL controls are removed.
+| Command | Action |
+| :--- | :--- |
+| `npx playwright test` | Executes all Playwright tests. |
+| `npx playwright test test/ui-ux.spec.ts` | Runs the UI/UX enhancement verification test suite. |
+| `npx playwright test test/mobile-responsive.spec.ts` | Runs mobile responsiveness and drawer tests. |
+| `npx playwright test --ui` | Opens the Playwright test runner UI. |
 
-## 🧪 Testing Strategy
+---
 
-The project uses Playwright for comprehensive testing:
-1. **API Sync Tests:** `test/api-sync.spec.ts` validates the RxDB replication protocol.
-2. **Clinical Logic Tests:** `test/clinical-logic.spec.ts` verifies assessment scoring.
-3. **Tenant Isolation:** `test/tenant-isolation-e2e.spec.ts` ensures data security.
-4. **Dashboard E2E & Sync:** `test/dashboard.spec.ts` and `test/dashboard-flows.spec.ts` verify client-side registration, editing details, and automated sync.
-5. **UI/UX Aesthetics:** `test/ui-ux.spec.ts` verifies centering, Framer Motion animations, and clinician profile integration.
+## 📜 Development & Code Style Conventions
 
-*Note for E2E tests: Always wait for RxDB database readiness before performing client interactions via:*
-```typescript
-await page.waitForFunction(() => (window as any).rxdb && (window as any).rxdb.patients, { timeout: 15000 });
-```
-*Note for UI Reliability:* Prefer targeting specific button text like `"Cancel"` or `"Register Patient"` for closing modals or submitting forms in tests, rather than generic SVG icons, to avoid pointer interception issues during animations.
-*Label Alignment:* The main dashboard view navigation is labeled as **"Overview"** in the sidebar. Ensure tests use this label instead of the legacy "Dashboard" text.
-
-## 🎨 Styling
-
-- **Design System:** Follow the Google Stitch integrated **"Crimson & Noir"** dark theme design tokens (primary `#E63946`, secondary `#000000` / `#0D0D0D` / `#161616`).
-- **Next.js & HTML styling:** Use **Vanilla CSS** modules or `app/globals.css`. **Tailwind CSS is strictly prohibited**.
-- **Interactive Stack:** Leverage Three.js, React Three Fiber, Framer Motion, GSAP, React Tilt, React Parallax, React Spring, and React Flip Toolkit for interactive elements and layouts.
-- **Responsive Layouts:** Use CSS grid utility classes (`.grid-2-equal`, `.grid-2-1`, `.grid-1-2`, `.grid-14-1`) rather than hardcoded inline styles. Always wrap tables in a `.table-responsive` container, and defensively verify element existence before modifying properties to prevent startup JS crashes.
-
-*Guide maintained by Gemini CLI - June 2026*
+- **Styling Mandate:** Style all pages and components using **Vanilla CSS**. The use of Tailwind CSS is strictly prohibited.
+- **Next.js & React Version:** The project runs on Next.js 16 (App Router) and React 19.
+- **E2E Motion Snapping:**
+  - When Playwright tests run, `navigator.webdriver` is set to `true`.
+  - The application automatically appends the `.no-animations` class to the body, which sets transition and animation durations to `0s` in CSS.
+  - React components read `isTestEnv` state and wrap their rendering trees in `<MotionConfig transition={{ duration: 0 }}>` and set element-specific spring transitions to `duration: 0` to prevent Playwright timing out on unstable elements.
+- **Clinical Data Integrity:**
+  - Modifications to assessment scales or high-risk flagging (especially suicide markers in CDA-17 Item 16 or SRA-20 Item 1) must be logged and highlighted.
+  - Audits of patient edits must be recorded via the `AuditLog` collection.

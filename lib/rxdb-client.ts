@@ -3,10 +3,9 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { replicateRxCollection, RxReplicationState } from 'rxdb/plugins/replication';
 
-let dbPromise: Promise<RxDatabase> | null = null;
 let replicationStates: Record<string, RxReplicationState<any, any>> = {};
 
-// Register query builder plugin
+// Register plugins
 try {
   addRxPlugin(RxDBQueryBuilderPlugin);
 } catch (e) {
@@ -113,17 +112,60 @@ const prescriptionSchema = {
   required: ['id', 'clinicId', 'updatedAt', 'deleted', '_rev', 'patientId', 'date']
 };
 
+const getDbName = () => {
+  if (typeof window === 'undefined') return 'psychiatryx_rxdb_v17';
+  
+  const isTest = (navigator.webdriver || window.location.search.includes('test=true')) && !window.location.search.includes('test=false');
+  const isAutomation = !!navigator.webdriver;
+  
+  if (isTest || isAutomation) {
+    const _global = (window as any);
+    if (!_global.__PSYCHIATRYX_DB_TEST_NAME__) {
+      const suffix = Math.random().toString(36).substring(7);
+      _global.__PSYCHIATRYX_DB_TEST_NAME__ = `psychiatryx_rxdb_test_${suffix}`;
+    }
+    return _global.__PSYCHIATRYX_DB_TEST_NAME__;
+  }
+  
+  return 'psychiatryx_rxdb_v17';
+};
+const DB_NAME = getDbName();
+
 export async function getRxDB(): Promise<RxDatabase> {
   if (typeof window === 'undefined') {
     throw new Error('RxDB can only be initialized on the client side.');
   }
 
-  if (!dbPromise) {
-    dbPromise = (async () => {
-      const db = await createRxDatabase({
-        name: 'psychiatryx_rxdb',
-        storage: getRxStorageDexie()
-      });
+  const _global = (window as any);
+  console.log("DEBUG getRxDB call. Cache exists:", !!_global.__PSYCHIATRYX_RXDB_PROMISE__);
+  if (_global.__PSYCHIATRYX_RXDB_PROMISE__) return _global.__PSYCHIATRYX_RXDB_PROMISE__;
+
+  _global.__PSYCHIATRYX_RXDB_PROMISE__ = (async () => {
+    try {
+      let db;
+      let retries = 0;
+      while (retries < 5) {
+        try {
+          db = await createRxDatabase({
+            name: DB_NAME,
+            storage: getRxStorageDexie(),
+            ignoreDuplicate: false
+          });
+          break;
+        } catch (err: any) {
+          console.error("DEBUG RxDB error:", err, err.stack);
+          if (err.message && (err.message.includes('DB9') || err.code === 'DB9')) {
+            console.warn(`RxDB duplicate database lock (DB9) detected. Retrying in 200ms... (Attempt ${retries + 1}/5)`);
+            await new Promise(resolve => setTimeout(resolve, 200));
+            retries++;
+          } else {
+            throw err;
+          }
+        }
+      }
+      if (!db) {
+        throw new Error("Failed to initialize RxDB: Max retries exceeded due to DB9 database locks.");
+      }
 
       // Register collections
       await db.addCollections({
@@ -135,7 +177,7 @@ export async function getRxDB(): Promise<RxDatabase> {
       // Defensive cleanup for HMR deleted$ RxDB issue
       const collections = ['patients', 'assessments', 'prescriptions'] as const;
       collections.forEach(col => {
-        const c = db[col];
+        const c = (db as any)[col];
         if (c && c.constructor.prototype) {
           try {
             delete c.constructor.prototype.deleted$;
@@ -146,23 +188,34 @@ export async function getRxDB(): Promise<RxDatabase> {
       });
 
       return db;
-    })();
-  }
+    } catch (err) {
+      delete _global.__PSYCHIATRYX_RXDB_PROMISE__;
+      throw err;
+    }
+  })();
 
-  return dbPromise;
+  return _global.__PSYCHIATRYX_RXDB_PROMISE__;
 }
 
 export async function factoryReset() {
   if (typeof window === 'undefined') return;
   try {
     const db = await getRxDB();
-    if (db && typeof db.destroy === 'function') {
-      await db.destroy();
+    if (db && typeof (db as any).destroy === 'function') {
+      await (db as any).destroy();
     }
   } catch (e) {
     // Ignore if not initialized
   }
-  const req = indexedDB.deleteDatabase('psychiatryx_rxdb');
+  
+  // Clean up both possible database names
+  indexedDB.deleteDatabase('psychiatryx_rxdb');
+  const req = indexedDB.deleteDatabase(DB_NAME);
+  
+  if (typeof window !== 'undefined') {
+    delete (window as any).__PSYCHIATRYX_RXDB_PROMISE__;
+  }
+  
   return new Promise<void>((resolve, reject) => {
     req.onsuccess = () => {
       localStorage.clear();

@@ -39,6 +39,18 @@
   --glow-shadow-intense: 0 0 30px rgba(230, 57, 70, 0.55);
 }
 
+/* Disable all transitions and animations during automated tests */
+body.no-animations *,
+body.no-animations *::before,
+body.no-animations *::after {
+  animation-delay: 0s !important;
+  animation-duration: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-delay: 0s !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+
 /* Base Styles */
 * {
   box-sizing: border-box;
@@ -409,6 +421,9 @@ h1, h2, h3, h4, h5, h6, .headline-font {
   background: var(--primary);
 }
 
+/* ========================================================
+   AUTH OVERLAY — Perfectly Centered, Immersive Login
+   ======================================================== */
 .auth-overlay {
   position: fixed;
   top: 0;
@@ -421,16 +436,461 @@ h1, h2, h3, h4, h5, h6, .headline-font {
   padding: 24px;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
 }
 
+/* Auth floating particles container */
+.auth-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  animation: authParticleFloat 12s ease-in-out infinite;
+}
+
+.auth-particle:nth-child(1) {
+  width: 6px; height: 6px;
+  background: var(--primary);
+  left: 15%; top: 20%;
+  animation-delay: 0s;
+  animation-duration: 14s;
+}
+.auth-particle:nth-child(2) {
+  width: 4px; height: 4px;
+  background: rgba(230, 57, 70, 0.6);
+  left: 75%; top: 60%;
+  animation-delay: 2s;
+  animation-duration: 10s;
+}
+.auth-particle:nth-child(3) {
+  width: 8px; height: 8px;
+  background: rgba(230, 57, 70, 0.3);
+  left: 40%; top: 80%;
+  animation-delay: 4s;
+  animation-duration: 16s;
+}
+.auth-particle:nth-child(4) {
+  width: 3px; height: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  left: 85%; top: 15%;
+  animation-delay: 1s;
+  animation-duration: 11s;
+}
+.auth-particle:nth-child(5) {
+  width: 5px; height: 5px;
+  background: rgba(230, 57, 70, 0.4);
+  left: 25%; top: 55%;
+  animation-delay: 6s;
+  animation-duration: 13s;
+}
+.auth-particle:nth-child(6) {
+  width: 10px; height: 10px;
+  background: rgba(230, 57, 70, 0.08);
+  left: 60%; top: 30%;
+  animation-delay: 3s;
+  animation-duration: 18s;
+  filter: blur(3px);
+}
+.auth-particle:nth-child(7) {
+  width: 4px; height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  left: 50%; top: 10%;
+  animation-delay: 7s;
+  animation-duration: 15s;
+}
+.auth-particle:nth-child(8) {
+  width: 6px; height: 6px;
+  background: rgba(230, 57, 70, 0.25);
+  left: 10%; top: 70%;
+  animation-delay: 5s;
+  animation-duration: 12s;
+}
+
+/* Animated radial orbs behind login card */
+.auth-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.auth-orb--primary {
+  width: 400px; height: 400px;
+  background: rgba(230, 57, 70, 0.12);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation: orbPulse 6s ease-in-out infinite;
+}
+.auth-orb--secondary {
+  width: 250px; height: 250px;
+  background: rgba(139, 92, 246, 0.06);
+  top: 30%; left: 30%;
+  transform: translate(-50%, -50%);
+  animation: orbDrift 10s ease-in-out infinite;
+}
+.auth-orb--accent {
+  width: 300px; height: 300px;
+  background: rgba(230, 57, 70, 0.06);
+  bottom: 20%; right: 15%;
+  animation: orbDrift 14s ease-in-out infinite reverse;
+}
+
+/* Login card container — elevated z-index to sit above particles/orbs */
+.auth-card-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 440px;
+  max-width: 92%;
+  animation: floatAnimation 6s ease-in-out infinite, borderGlowPulse 4s ease-in-out infinite;
+}
+
+/* Sidebar Analytics Brief Section */
+.sidebar-analytics {
+  margin: 4px 14px 10px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sidebar-analytics:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(230, 57, 70, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.sidebar-analytics-title {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sidebar-analytics-chart-container {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.01);
+  margin-bottom: 8px;
+}
+.sidebar-analytics-chart-container:last-child {
+  margin-bottom: 0;
+}
+
+/* ========================================================
+   SIDEBAR — Interactive & Decorative Enhancements
+   ======================================================== */
+
+/* Sidebar ambient glow line at top */
+.sidebar-glow-line {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: 0.4;
+  animation: glowLinePulse 4s ease-in-out infinite;
+}
+
+/* Sidebar decorative scanner sweep */
+.sidebar-scan {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.sidebar-scan::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 60px;
+  background: linear-gradient(180deg, rgba(230, 57, 70, 0.04) 0%, transparent 100%);
+  animation: scanSweep 8s linear infinite;
+}
+
+/* Sidebar brand animated corner accents */
+.sidebar-brand-corner {
+  position: absolute;
+  width: 20px; height: 20px;
+  border-color: var(--primary);
+  opacity: 0.2;
+  transition: opacity 0.4s;
+}
+.sidebar-brand-corner--tl {
+  top: 10px; left: 10px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+.sidebar-brand-corner--br {
+  bottom: 10px; right: 10px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+/* Sidebar quick stats mini-cards */
+.sidebar-quick-stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(230, 57, 70, 0.08);
+  border-radius: var(--radius);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: default;
+}
+.sidebar-quick-stat:hover {
+  background: rgba(230, 57, 70, 0.06);
+  border-color: rgba(230, 57, 70, 0.2);
+  transform: translateX(3px);
+}
+.sidebar-quick-stat-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.sidebar-quick-stat-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: white;
+  line-height: 1;
+}
+.sidebar-quick-stat-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+/* Sidebar micro-animation for active nav indicator */
+.nav-active-indicator {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--primary);
+  border-radius: 0 3px 3px 0;
+  box-shadow: 0 0 12px rgba(230, 57, 70, 0.5);
+  animation: navIndicatorPulse 2s ease-in-out infinite;
+}
+
+/* Nav item hover enhancements */
+.nav-item-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+}
 .nav-item-hover:hover {
   background: rgba(230, 57, 70, 0.1) !important;
   color: white !important;
   transform: translateX(6px);
   box-shadow: -4px 0 0 var(--primary);
 }
+.nav-item-hover::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  width: 0; height: 60%;
+  transform: translateY(-50%);
+  background: var(--primary);
+  border-radius: 0 3px 3px 0;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+}
+.nav-item-hover:hover::before {
+  width: 3px;
+  opacity: 1;
+}
+
+/* Sidebar version/status text animation */
+.sidebar-pulse-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  animation: pulseDot 2.5s ease-in-out infinite;
+}
+
+/* Sidebar section divider with label */
+.sidebar-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px 6px;
+}
+.sidebar-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+.sidebar-divider-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
 
 .hidden {
   display: none !important;
+}
+
+/* ========================================================
+   KEYFRAME ANIMATIONS
+   ======================================================== */
+
+/* Floating particle drift for auth screen */
+@keyframes authParticleFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  15% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-120px) translateX(30px) scale(1.2);
+  }
+  85% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-250px) translateX(-20px) scale(0.8);
+  }
+}
+
+/* Pulsing radial orb behind login */
+@keyframes orbPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 0.7;
+  }
+}
+
+/* Drifting orb movement */
+@keyframes orbDrift {
+  0%, 100% {
+    transform: translate(-50%, -50%) translate(0, 0);
+  }
+  33% {
+    transform: translate(-50%, -50%) translate(30px, -20px);
+  }
+  66% {
+    transform: translate(-50%, -50%) translate(-20px, 15px);
+  }
+}
+
+/* Sidebar glow line pulse */
+@keyframes glowLinePulse {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.6; }
+}
+
+/* Sidebar scanner sweep */
+@keyframes scanSweep {
+  0% { top: -60px; }
+  100% { top: 100%; }
+}
+
+/* Active nav indicator pulse */
+@keyframes navIndicatorPulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(230, 57, 70, 0.3);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(230, 57, 70, 0.6);
+    opacity: 0.85;
+  }
+}
+
+/* Status dot pulse */
+@keyframes pulseDot {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+}
+
+/* Spinner rotation for auth loading */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Subtle card entrance float */
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Auth card shimmer on the border */
+@keyframes authCardShimmer {
+  0% {
+    border-color: var(--border);
+  }
+  50% {
+    border-color: rgba(230, 57, 70, 0.35);
+  }
+  100% {
+    border-color: var(--border);
+  }
+}
+
+/* Floating animation for login card */
+@keyframes floatAnimation {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(0.3deg); }
+}
+
+/* Pulsing border glow for login card */
+@keyframes borderGlowPulse {
+  0%, 100% {
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 20px rgba(230, 57, 70, 0.1);
+    border-color: var(--border);
+  }
+  50% {
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 35px rgba(230, 57, 70, 0.35);
+    border-color: rgba(230, 57, 70, 0.5);
+  }
+}
+
+/* EEG pulse wave telemetry animation */
+@keyframes pulseWaveSweep {
+  0% { stroke-dashoffset: 120; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.clinical-pulse-wave {
+  stroke-dasharray: 60;
+  animation: pulseWaveSweep 3s linear infinite;
 }
 

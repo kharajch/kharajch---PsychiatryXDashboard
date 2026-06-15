@@ -51,6 +51,7 @@ If sync issues are reported:
 -   **Interactive Motion & Staggering:** Use Framer Motion (`motion.div`) for all major component entrances. Prefer spring-based transitions for sidebars and staggered delays for list/card items to ensure the UI feels "alive".
 -   **Modal & Overlay Stability:** Always wrap modal overlays and authentication cards in `AnimatePresence` and use `motion.div` for the overlay itself. This ensures clean exit transitions and prevents lingering DOM elements from intercepting pointer events during E2E tests.
 -   **Consistent Hover Feedback:** Use the `.nav-item-hover` class for sidebar elements, ensuring a consistent 6px horizontal shift and primary-color glow on focus/hover.
+-   **E2E Motion & Centering Stability:** Under Playwright test runs (`navigator.webdriver` is true), the application adds `.no-animations` to the document body to immediately disable all CSS keyframes and transitions. Additionally, the React frontend reads `isTestEnv` state and conditionally overrides Framer Motion transitions (setting `transition={isTestEnv ? { duration: 0 } : ...}`) on all major animating containers. This prevents element movement instability and layout offsets from failing click locators or bounding box assertions during automated checks.
 
 
 ## 📜 Next.js Specific Rules (Internal)

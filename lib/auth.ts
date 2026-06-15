@@ -15,7 +15,7 @@ export async function getClinicSession(req: NextRequest): Promise<ClinicSession 
     id: 'direct-access-user',
     name: 'Direct Access Clinician',
     email: 'direct@psychiatryx.com',
-    clinicId: process.env.DEFAULT_CLINIC_ID || 'demo-clinic-123',
+    clinicId: process.env.DEFAULT_CLINIC_ID || 'dev-clinic-id',
     role: 'clinician'
   };
 
