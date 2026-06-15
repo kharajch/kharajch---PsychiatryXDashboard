@@ -409,6 +409,27 @@ h1, h2, h3, h4, h5, h6, .headline-font {
   background: var(--primary);
 }
 
+.auth-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.nav-item-hover:hover {
+  background: rgba(230, 57, 70, 0.1) !important;
+  color: white !important;
+  transform: translateX(6px);
+  box-shadow: -4px 0 0 var(--primary);
+}
+
 .hidden {
   display: none !important;
 }

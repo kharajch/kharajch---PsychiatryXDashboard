@@ -29,7 +29,7 @@ test.describe('PsychiatryX Dashboard E2E Flows', () => {
     const syncText = page.locator('#sync-text');
     
     // 1. Initial state should transition to Connected automatically
-    await expect(syncText).toHaveText(/(Syncing data...|Connected & Synced)/, { timeout: 30000 });
+    await expect(syncText).toHaveText(/(Syncing data...|Connected & Synced|CONNECTED|SYNCING...)/, { timeout: 30000 });
   });
 
   test('should support registering a new patient offline and auto-pushing when online', async ({ page }) => {
@@ -51,7 +51,7 @@ test.describe('PsychiatryX Dashboard E2E Flows', () => {
     // 3. Go online and check sync recovery
     isSyncOffline = false;
     await page.evaluate(() => (window as any).setupReplication(true));
-    await expect(page.locator('#sync-text')).toHaveText(/(Syncing data...|Connected & Synced)/, { timeout: 40000 });
+    await expect(page.locator('#sync-text')).toHaveText(/(Syncing data...|Connected & Synced|CONNECTED|SYNCING...)/, { timeout: 40000 });
 
     // 4. Verify in DB
     await page.waitForTimeout(5000);
@@ -106,9 +106,14 @@ test.describe('PsychiatryX Dashboard E2E Flows', () => {
     await page.locator('button:has-text("Load")').click();
     await expect(page.locator('#toast')).toContainText('Prescription loaded', { timeout: 15000 });
 
-    page.once('dialog', dialog => dialog.accept()); 
+    // Close the modal that "Load" opened
+    await page.locator('.auth-overlay button:has-text("Cancel")').click();
+    await expect(page.locator('.auth-overlay')).not.toBeVisible();
+
+    page.once('dialog', dialog => dialog.accept());
     await page.locator('button:has-text("🗑")').click();
     await expect(page.locator('text=No prescriptions yet')).toBeVisible();
+
   });
 
   test('should maintain active patient context during navigation and generate full report PDF', async ({ page }) => {
@@ -119,10 +124,11 @@ test.describe('PsychiatryX Dashboard E2E Flows', () => {
     await page.locator('#reg-gender').selectOption('Male');
     await page.locator('button:has-text("Register Patient")').click();
 
-    await page.locator('#sidebar >> text=Dashboard').click();
+    await page.locator('#sidebar >> text=Overview').click();
     await expect(page.locator('#hp-name')).toHaveText(testName);
 
     await page.locator('#sidebar >> text=Patient Profile').click();
+
     const downloadPromise = page.waitForEvent('download', { timeout: 60000 });
     await page.locator('button:has-text("Full Report")').click();
     const download = await downloadPromise;

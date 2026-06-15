@@ -48,7 +48,10 @@ If sync issues are reported:
 - **Asynchronous Modal Form Submission:** When a form is submitted inside a modal with sequential dismissal (e.g. calling `saveEditPatient(id)` followed by `closeModal()`), always read all required input values synchronously at the very beginning of the submission handler. Otherwise, async steps (like database gets) will yield execution, letting `closeModal()` run first and clear the DOM, causing null-element reference crashes when the handler resumes.
 - **Responsive Layout Classes:** Never use hardcoded inline styles for grid layouts (e.g. `display: grid; grid-template-columns: ...`). Use the predefined stylesheet grid classes (`.grid-2-equal`, `.grid-2-1`, `.grid-1-2`, `.grid-14-1`) which are configured to automatically stack into a single column on mobile.
 - **Scrollable Tables:** Wrap all HTML tables in a `.table-responsive` block to ensure horizontal scroll containment on small viewports.
-- **Drawer Navigation:** When navigating on mobile, ensure the slide-out navigation drawer and backdrop overlay auto-close after page transitions.
+-   **Interactive Motion & Staggering:** Use Framer Motion (`motion.div`) for all major component entrances. Prefer spring-based transitions for sidebars and staggered delays for list/card items to ensure the UI feels "alive".
+-   **Modal & Overlay Stability:** Always wrap modal overlays and authentication cards in `AnimatePresence` and use `motion.div` for the overlay itself. This ensures clean exit transitions and prevents lingering DOM elements from intercepting pointer events during E2E tests.
+-   **Consistent Hover Feedback:** Use the `.nav-item-hover` class for sidebar elements, ensuring a consistent 6px horizontal shift and primary-color glow on focus/hover.
+
 
 ## 📜 Next.js Specific Rules (Internal)
 <!-- BEGIN:nextjs-agent-rules -->

@@ -33,7 +33,7 @@ test.describe('PsychiatryX Direct Sync (Zero-Auth) E2E', () => {
     
     // 1. Verify it transitions to "Connected & Synced" or "Syncing" automatically
     // It should target window.location.origin which is the playwright server
-    await expect(syncText).toHaveText(/(Syncing data...|Connected & Synced)/, { timeout: 20000 });
+    await expect(syncText).toHaveText(/(Syncing data...|Connected & Synced|CONNECTED|SYNCING...)/, { timeout: 20000 });
 
     // 2. Verify no login modal is visible
     const loginModal = page.locator('text=Connect to Cloud Sync');
@@ -51,7 +51,7 @@ test.describe('PsychiatryX Direct Sync (Zero-Auth) E2E', () => {
     await page.waitForFunction(() => (window as any).rxdb && (window as any).rxdb.patients, { timeout: 15000 });
     
     // 3. Verify it shows offline status
-    await expect(syncText).toContainText('offline (local only)', { timeout: 15000 });
+    await expect(syncText).toContainText('OFFLINE', { timeout: 15000 });
     
     // 4. Verify we can still register a patient offline
     await page.locator('#sidebar >> text=Register Patient').click();
@@ -66,7 +66,7 @@ test.describe('PsychiatryX Direct Sync (Zero-Auth) E2E', () => {
     // 5. Go online and check auto-sync recovery
     isSyncOffline = false;
     await page.evaluate(() => (window as any).setupReplication(true));
-    await expect(syncText).toHaveText(/(Syncing data...|Connected & Synced)/, { timeout: 30000 });
+    await expect(syncText).toHaveText(/(Syncing data...|Connected & Synced|CONNECTED|SYNCING...)/, { timeout: 30000 });
   });
 
   test('should automatically use default clinic session for zero-auth sync', async ({ page, request }) => {
@@ -82,7 +82,7 @@ test.describe('PsychiatryX Direct Sync (Zero-Auth) E2E', () => {
     await page.locator('button:has-text("Register Patient")').click();
     
     // 2. Wait for sync to complete (Replication is live, so it should be fast but needs a moment)
-    await expect(page.locator('#sync-text')).toHaveText(/(Connected & Synced|Syncing data...)/, { timeout: 30000 });
+    await expect(page.locator('#sync-text')).toHaveText(/(Connected & Synced|Syncing data...|CONNECTED|SYNCING...)/, { timeout: 30000 });
     
     // Give it a few seconds for the network request to actually finish
     await page.waitForTimeout(5000);

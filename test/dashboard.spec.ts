@@ -42,12 +42,12 @@ test.describe('PsychiatryX Dashboard E2E Tests', () => {
 
   test('should automatically connect to the sync server on load', async () => {
     const syncText = page.locator('#sync-text');
-    await expect(syncText).toHaveText(/(Syncing data...|Connected & Synced)/, { timeout: 30000 });
+    await expect(syncText).toHaveText(/(Syncing data...|Connected & Synced|CONNECTED|SYNCING...)/, { timeout: 30000 });
   });
 
   test('should support registering a new patient and automatically sync', async () => {
     // 1. Verify connection to dev server is active
-    await expect(page.locator('#sync-text')).toHaveText(/(Syncing data...|Connected & Synced)/, { timeout: 30000 });
+    await expect(page.locator('#sync-text')).toHaveText(/(Syncing data...|Connected & Synced|CONNECTED|SYNCING...)/, { timeout: 30000 });
 
     // 2. Navigate to New Patient page
     await page.locator('button:has-text("New Patient")').first().click();

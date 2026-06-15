@@ -51,7 +51,7 @@ test.describe('PsychiatryX Dashboard Multi-tenancy E2E', () => {
     }, authTokenA);
     await pageA.reload();
     await pageA.waitForFunction(() => (window as any).rxdb && (window as any).rxdb.patients, { timeout: 15000 });
-    await expect(pageA.locator('#sync-text')).toHaveText(/(Syncing data...|Connected & Synced)/, { timeout: 30000 });
+    await expect(pageA.locator('#sync-text')).toHaveText(/(Syncing data...|Connected & Synced|CONNECTED|SYNCING...)/, { timeout: 30000 });
 
     // Register a patient in Clinic A
     const patientNameA = 'Clinic A Patient ' + Math.random().toString(36).substring(7);
@@ -81,7 +81,7 @@ test.describe('PsychiatryX Dashboard Multi-tenancy E2E', () => {
     }, authTokenB);
     await pageB.reload();
     await pageB.waitForFunction(() => (window as any).rxdb && (window as any).rxdb.patients, { timeout: 15000 });
-    await expect(pageB.locator('#sync-text')).toHaveText(/(Syncing data...|Connected & Synced)/, { timeout: 30000 });
+    await expect(pageB.locator('#sync-text')).toHaveText(/(Syncing data...|Connected & Synced|CONNECTED|SYNCING...)/, { timeout: 30000 });
     
     // In Page B, the patient from Clinic A should NOT exist.
     await pageB.locator('#sidebar >> text=Patient Database').click();

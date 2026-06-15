@@ -5,7 +5,8 @@ A professional, clinical-grade psychiatric management platform featuring a **Hyb
 ## 🌟 Core Features
 
 -   **Crimson & Noir Dark Theme:** Sleek, premium dark-mode interface built with a crimson red and black clinical palette using Google Stitch.
--   **Immersive Micro-Animations:** Dynamic background particle systems, card hover effects, and layout animations powered by Three.js, React Three Fiber, Framer Motion, and GSAP.
+-   **Immersive Micro-Animations:** Dynamic background particle systems, spring-based sidebar entrance, staggered card entrance, and crimson hover glows powered by Framer Motion, GSAP, and Three.js.
+-   **Clinician-Centric UI:** Centered, glassmorphic authentication experience and interactive sidebar with real-time sync pulsing and verified provider profiles.
 -   **Comprehensive Assessment Suite:** 10+ standardized psychiatric scales (CAA-14, CDA-17, SRA-20, etc.) with automated scoring.
 -   **Clinical Decision Support:** Intelligent flagging of high-risk responses and suicide risk markers.
 -   **Longitudinal Symptom Profiling:** Multi-domain visualization using Radar Charts for quick clinical insights.

@@ -40,13 +40,15 @@ The project uses Playwright for comprehensive testing:
 1. **API Sync Tests:** `test/api-sync.spec.ts` validates the RxDB replication protocol.
 2. **Clinical Logic Tests:** `test/clinical-logic.spec.ts` verifies assessment scoring.
 3. **Tenant Isolation:** `test/tenant-isolation-e2e.spec.ts` ensures data security.
-4. **Dashboard E2E & Sync:** `test/dashboard.spec.ts` and `test/dashboard-flows.spec.ts` verify client-side registration, editing details, complete deletion, and automated sync.
+4. **Dashboard E2E & Sync:** `test/dashboard.spec.ts` and `test/dashboard-flows.spec.ts` verify client-side registration, editing details, and automated sync.
+5. **UI/UX Aesthetics:** `test/ui-ux.spec.ts` verifies centering, Framer Motion animations, and clinician profile integration.
 
 *Note for E2E tests: Always wait for RxDB database readiness before performing client interactions via:*
 ```typescript
 await page.waitForFunction(() => (window as any).rxdb && (window as any).rxdb.patients, { timeout: 15000 });
 ```
-*Note for Delete Buttons:* Delete button locators in E2E tests target the literal `"🗑"` trash emoji. Ensure delete buttons render this emoji.
+*Note for UI Reliability:* Prefer targeting specific button text like `"Cancel"` or `"Register Patient"` for closing modals or submitting forms in tests, rather than generic SVG icons, to avoid pointer interception issues during animations.
+*Label Alignment:* The main dashboard view navigation is labeled as **"Overview"** in the sidebar. Ensure tests use this label instead of the legacy "Dashboard" text.
 
 ## 🎨 Styling
 

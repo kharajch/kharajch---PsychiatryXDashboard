@@ -128,7 +128,7 @@ test.describe('PsychiatryX Authentication & Authorization E2E', () => {
     
     // Auth card should disappear and app container should become visible
     await expect(page.locator('#app')).not.toHaveClass(/hidden/, { timeout: 15000 });
-    await expect(page.locator('#sync-text')).toHaveText(/(Connected & Synced|Syncing data...)/, { timeout: 15000 });
+    await expect(page.locator('#sync-text')).toHaveText(/(Connected & Synced|Syncing data...|CONNECTED|SYNCING...)/, { timeout: 15000 });
 
     // Logout and verify we are blocked again
     await page.locator('#header-logout-btn').click();

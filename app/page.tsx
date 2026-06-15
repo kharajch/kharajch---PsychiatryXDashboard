@@ -1689,9 +1689,16 @@ export default function Home() {
       </AnimatePresence>
 
       {/* Clinician Authentication Overlay */}
-      {!isAuthenticated && (
-        <div className="auth-overlay" style={{ background: '#080808', zIndex: 999 }}>
-          <div ref={loginCardRef} className="card" style={{ width: '420px', maxWidth: '90%', background: 'rgba(18,18,18,0.8)', border: '1px solid var(--border)', backdropFilter: 'blur(20px)' }}>
+      <AnimatePresence>
+        {!isAuthenticated && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="auth-overlay" 
+            style={{ background: '#080808', zIndex: 999 }}
+          >
+            <div ref={loginCardRef} className="card" style={{ width: '420px', maxWidth: '90%', background: 'rgba(18,18,18,0.8)', border: '1px solid var(--border)', backdropFilter: 'blur(20px)' }}>
             <div className="card-header" style={{ justifyContent: 'center', borderBottom: '1px solid var(--border)' }}>
               <h1 style={{ color: 'var(--primary)', fontSize: '24px', letterSpacing: '-0.5px' }}>PSYCHIATRY<span style={{color: 'white'}}>X</span></h1>
             </div>
@@ -1802,62 +1809,90 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Main Layout */}
       <div id="app" className={isAuthenticated ? "" : "hidden"}>
           {/* Sidebar */}
-          <div 
+          <motion.div 
             id="sidebar"
+            initial={{ x: -280, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 120 }}
             style={{ 
               width: 'var(--sidebar-width)', 
-              background: 'rgba(12,12,12,0.9)', 
+              background: 'linear-gradient(180deg, rgba(12,12,12,0.98) 0%, rgba(18,18,18,0.95) 100%)', 
               borderRight: '1px solid var(--border)', 
               position: 'fixed', top: 0, left: 0, height: '100vh', 
               zIndex: 100, display: 'flex', flexDirection: 'column',
-              overflowY: 'auto'
+              overflowY: 'auto',
+              backdropFilter: 'blur(25px)',
+              boxShadow: '10px 0 30px rgba(0,0,0,0.5)'
             }}
           >
-            <div style={{ padding: '24px 20px', borderBottom: '1px solid var(--border)' }}>
-              <h1 style={{ color: 'var(--primary)', fontSize: '18px', letterSpacing: '-0.3px' }}>PSYCHIATRY<span style={{color: 'white'}}>X</span></h1>
-              <p style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px', letterSpacing: '0.5px' }}>CLINICAL PORTAL</p>
+            <div style={{ padding: '24px 20px', borderBottom: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'relative', zIndex: 2 }}>
+                <h1 style={{ color: 'var(--primary)', fontSize: '20px', letterSpacing: '-0.5px', fontWeight: 800 }}>PSYCHIATRY<span style={{color: 'white'}}>X</span></h1>
+                <p style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px', letterSpacing: '1px', fontWeight: 600 }}>CLINICAL ENGINE</p>
+              </div>
+              <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '80px', height: '80px', background: 'var(--primary)', opacity: 0.05, filter: 'blur(30px)', borderRadius: '50%' }}></div>
             </div>
 
             {/* Sync State Badge */}
-            <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ 
-                  width: '8px', height: '8px', borderRadius: '50%', 
-                  background: syncStatus === 'online' ? '#059669' : syncStatus === 'syncing' ? '#fbbf24' : '#e63946',
-                  boxShadow: syncStatus === 'online' ? '0 0 6px #059669' : '0 0 6px #fbbf24'
-                }} />
-                <div>
-                  <p id="sync-text" style={{ fontSize: '12px', fontWeight: 600 }}>
-                    {syncMessage}
+            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <motion.span 
+                  animate={{ 
+                    scale: [1, 1.3, 1],
+                    opacity: [0.7, 1, 0.7]
+                  }}
+                  transition={{ 
+                    repeat: Infinity, 
+                    duration: 2,
+                    ease: "easeInOut"
+                  }}
+                  style={{ 
+                    width: '8px', height: '8px', borderRadius: '50%', 
+                    background: syncStatus === 'online' ? '#10b981' : syncStatus === 'syncing' ? '#fbbf24' : '#e63946',
+                    boxShadow: syncStatus === 'online' ? '0 0 10px #10b981' : syncStatus === 'syncing' ? '0 0 10px #fbbf24' : '0 0 10px #e63946'
+                  }} 
+                />
+                <div style={{ flex: 1 }}>
+                  <p id="sync-text" style={{ fontSize: '11px', fontWeight: 700, color: 'white', letterSpacing: '0.3px' }}>
+                    {syncStatus === 'online' ? 'CONNECTED' : syncStatus === 'syncing' ? 'SYNCING...' : 'OFFLINE'}
                   </p>
+                  <p style={{ fontSize: '9px', color: 'var(--text-secondary)', marginTop: '1px' }}>{syncMessage}</p>
                 </div>
               </div>
             </div>
 
             {/* Active Patient Card */}
-            {activePatient ? (
-              <div style={{ margin: '14px', padding: '14px', background: 'rgba(230,57,70,0.08)', border: '1px solid var(--border-active)', borderRadius: 'var(--radius)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.5px' }}>SELECTED PATIENT</span>
-                  <FaTimes style={{ cursor: 'pointer', fontSize: '10px', color: 'var(--text-secondary)' }} onClick={() => setActivePatient(null)} />
+            <AnimatePresence>
+              {activePatient ? (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                  style={{ margin: '14px', padding: '14px', background: 'rgba(230,57,70,0.1)', border: '1px solid var(--border-active)', borderRadius: 'var(--radius)', boxShadow: '0 4px 15px rgba(230,57,70,0.1)' }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: 800, letterSpacing: '0.8px' }}>ACTIVE PATIENT</span>
+                    <FaTimes style={{ cursor: 'pointer', fontSize: '10px', color: 'var(--text-secondary)' }} onClick={() => setActivePatient(null)} />
+                  </div>
+                  <p style={{ fontSize: '14px', fontWeight: 800, color: 'white', marginTop: '6px' }}>{activePatient.name}</p>
+                  <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>ID: {activePatient.patientId || 'N/A'} | {activePatient.age}Y | {activePatient.gender}</p>
+                </motion.div>
+              ) : (
+                <div style={{ margin: '14px', padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px dashed var(--border)', borderRadius: 'var(--radius)', textAlign: 'center' }}>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>No Active Subject</p>
                 </div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', marginTop: '4px' }}>{activePatient.name}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '1px' }}>Age: {activePatient.age} | {activePatient.gender}</p>
-              </div>
-            ) : (
-              <div style={{ margin: '14px', padding: '14px', background: '#121212', border: '1px dashed var(--border)', borderRadius: 'var(--radius)', textAlign: 'center' }}>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>No Patient Selected</p>
-              </div>
-            )}
+              )}
+            </AnimatePresence>
 
             {/* Register Patient Sidebar Action */}
-            <div style={{ padding: '0 14px', marginBottom: '8px' }}>
+            <div style={{ padding: '0 14px', marginTop: '10px' }}>
               <div 
                 className="btn btn-primary btn-sm" 
                 onClick={() => {
@@ -1869,63 +1904,92 @@ export default function Home() {
                   });
                   setIsPatientModalOpen(true);
                 }}
-                style={{ width: '100%', justifyContent: 'center', cursor: 'pointer' }}
+                style={{ width: '100%', justifyContent: 'center', cursor: 'pointer', borderRadius: 'var(--radius)' }}
               >
                 ➕ Register Patient
               </div>
             </div>
 
             {/* Nav Menu */}
-            <div style={{ padding: '14px 10px', flex: 1 }}>
+            <div style={{ padding: '10px', flex: 1 }}>
+              <p style={{ fontSize: '9px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', padding: '10px 14px 6px' }}>Main Navigation</p>
               {[
-                { view: 'dashboard', label: 'Dashboard', icon: <FaHeartbeat /> },
+                { view: 'dashboard', label: 'Overview', icon: <FaHeartbeat /> },
                 { view: 'patients', label: 'Patient Database', icon: <FaUser /> },
                 { view: 'assessments', label: 'Run Assessment', icon: <FaFileMedical /> },
                 { view: 'patient-profile', label: 'Patient Profile', icon: <FaUser /> },
                 { view: 'prescriptions', label: 'Prescriptions', icon: <FaCapsules /> },
                 { view: 'reports', label: 'Reports', icon: <FaHistory /> },
                 { view: 'settings', label: 'Settings', icon: <FaCog /> }
-              ].map(item => (
-                <div 
+              ].map((item, idx) => (
+                <motion.div 
                   key={item.view}
                   id={item.view === 'assessments' ? 'nav-assess' : undefined}
+                  initial={{ opacity: 0, x: -15 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 + idx * 0.04 }}
                   onClick={() => {
                     setCurrentView(item.view as View);
                     setIsMobileMenuOpen(false);
                   }}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '12px',
-                    padding: '10px 14px', borderRadius: 'var(--radius)',
-                    cursor: 'pointer', marginBottom: '4px', fontSize: '13.5px',
+                    padding: '11px 14px', borderRadius: 'var(--radius)',
+                    cursor: 'pointer', marginBottom: '3px', fontSize: '13px',
                     background: currentView === item.view ? 'var(--primary)' : 'transparent',
                     color: currentView === item.view ? 'white' : 'var(--text-secondary)',
-                    fontWeight: currentView === item.view ? 600 : 400,
-                    transition: 'all 0.2s'
+                    fontWeight: currentView === item.view ? 700 : 500,
+                    transition: 'all 0.2s',
+                    boxShadow: currentView === item.view ? '0 4px 12px rgba(230,57,70,0.3)' : 'none'
                   }}
                   className={currentView === item.view ? '' : 'nav-item-hover'}
                 >
-                  {item.icon}
+                  <span style={{ fontSize: '14px', opacity: currentView === item.view ? 1 : 0.7 }}>{item.icon}</span>
                   <span>{item.label}</span>
-                </div>
+                </motion.div>
               ))}
             </div>
 
-            {/* Logout block */}
-            <div style={{ padding: '20px 14px', borderTop: '1px solid var(--border)' }}>
+            {/* Clinician Profile Footer */}
+            <div style={{ padding: '16px', borderTop: '1px solid var(--border)', background: 'rgba(230,57,70,0.02)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ 
+                  width: '38px', height: '38px', borderRadius: '10px', 
+                  background: 'linear-gradient(135deg, var(--primary), #b31020)', 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                  fontSize: '15px', fontWeight: 800, color: 'white',
+                  boxShadow: '0 4px 10px rgba(230,57,70,0.3)'
+                }}>
+                  {fullName ? fullName.charAt(0).toUpperCase() : 'D'}
+                </div>
+                <div style={{ overflow: 'hidden' }}>
+                  <p style={{ fontSize: '13px', fontWeight: 700, color: 'white', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>Dr. {fullName || 'Clinician'}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#10b981' }}></div>
+                    <p style={{ fontSize: '9px', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>Verified Provider</p>
+                  </div>
+                </div>
+              </div>
+
               <div 
                 id="header-logout-btn"
                 onClick={handleLogout}
                 style={{ 
-                  display: 'flex', alignItems: 'center', gap: '12px', 
-                  padding: '10px 14px', borderRadius: 'var(--radius)', 
-                  cursor: 'pointer', color: 'var(--text-secondary)' 
+                  display: 'flex', alignItems: 'center', gap: '10px', 
+                  padding: '10px 12px', borderRadius: 'var(--radius-sm)', 
+                  cursor: 'pointer', color: 'var(--text-muted)',
+                  fontSize: '12px', fontWeight: 600,
+                  background: 'rgba(255,255,255,0.03)',
+                  transition: 'all 0.2s'
                 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.background = 'rgba(230,57,70,0.05)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
               >
                 <FaSignOutAlt />
-                <span>Logout</span>
+                <span>Logout Session</span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Main Area */}
           <div className="main-content">
@@ -1988,16 +2052,29 @@ export default function Home() {
                           { title: 'Suicidal / Critical Alert', spring: highRiskCountSpring, icon: <FaExclamationTriangle />, sub: 'Requires safety review', isDanger: true },
                           { title: 'Prescriptions', spring: prescriptionCountSpring, icon: <FaCapsules />, sub: 'Issued locally' }
                         ].map((stat, idx) => (
-                          <div key={idx} className="card card-body" style={{ background: stat.isDanger ? 'rgba(230,57,70,0.06)' : 'var(--surface)', borderColor: stat.isDanger ? 'var(--primary)' : 'var(--border)' }}>
+                          <motion.div 
+                            key={idx} 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.1 }}
+                            className="card card-body" 
+                            style={{ 
+                              background: stat.isDanger ? 'rgba(230,57,70,0.06)' : 'var(--surface)', 
+                              borderColor: stat.isDanger ? 'var(--primary)' : 'var(--border)',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'center'
+                            }}
+                          >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{stat.title}</span>
+                              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{stat.title}</span>
                               <span style={{ fontSize: '18px', color: stat.isDanger ? 'var(--primary)' : 'var(--text-muted)' }}>{stat.icon}</span>
                             </div>
-                            <animated.h2 style={{ fontSize: '32px', fontWeight: 800, margin: '8px 0 2px' }}>
+                            <animated.h2 style={{ fontSize: '32px', fontWeight: 800, margin: '8px 0 2px', color: stat.isDanger ? 'var(--primary)' : 'white' }}>
                               {stat.spring.number.to(n => Math.floor(n))}
                             </animated.h2>
                             <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{stat.sub}</p>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
 
@@ -2836,13 +2913,20 @@ export default function Home() {
       {/* Modal: Register/Edit Patient */}
       <AnimatePresence>
         {isPatientModalOpen && (
-          <div className="auth-overlay" style={{ background: 'rgba(0,0,0,0.6)', zIndex: 9999 }}>
-            <motion.div 
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="auth-overlay" 
+            style={{ background: 'rgba(0,0,0,0.6)', zIndex: 9999 }}
+          >
+            <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               className="card" style={{ width: '600px', maxWidth: '95%', maxHeight: '90vh', overflowY: 'auto' }}
             >
+
               <div className="card-header">
                 <span className="card-title">{editingPatient ? 'Edit Patient' : 'Register New Patient'}</span>
                 <FaTimes style={{ cursor: 'pointer' }} onClick={() => { setIsPatientModalOpen(false); setEditingPatient(null); }} />
@@ -2995,20 +3079,27 @@ export default function Home() {
                 </form>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
       {/* Modal: Compose Prescription */}
       <AnimatePresence>
         {isPrescriptionModalOpen && (
-          <div className="auth-overlay" style={{ background: 'rgba(0,0,0,0.6)', zIndex: 9999 }}>
-            <motion.div 
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="auth-overlay" 
+            style={{ background: 'rgba(0,0,0,0.6)', zIndex: 9999 }}
+          >
+            <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               className="card" style={{ width: '720px', maxWidth: '95%', maxHeight: '90vh', overflowY: 'auto' }}
             >
+
               <div className="card-header">
                 <span className="card-title">Compose Prescription for {activePatient?.name}</span>
                 <FaTimes style={{ cursor: 'pointer' }} onClick={() => setIsPrescriptionModalOpen(false)} />
@@ -3162,7 +3253,7 @@ export default function Home() {
                 </div>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
