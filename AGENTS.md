@@ -41,6 +41,9 @@ If sync issues are reported:
 - Always ensure "High Risk" labels are visually prominent (Red/Urgent).
 
 ### 4. UI/UX & Responsiveness
+- **Crimson & Noir Dark Theme:** Adhere strictly to the Google Stitch design tokens, using the primary crimson red (`#E63946`) and dark black/charcoal (`#000000` / `#0D0D0D` / `#161616`) theme palette for all components.
+- **Vanilla CSS Mandate:** Write styling strictly in Vanilla CSS. Do NOT use Tailwind CSS.
+- **E2E Selector Parity:** Any delete buttons targeted by Playwright E2E tests (such as prescription builders or patients) must render the literal trash emoji `"🗑"` in their label or content to satisfy the test locator `button:has-text("🗑")`.
 - **Defensive DOM Manipulation:** Always verify the presence of DOM elements (e.g. check if not `null`) before modifying their attributes or properties (such as `.src`, `.textContent`) to prevent startup JS crashes.
 - **Asynchronous Modal Form Submission:** When a form is submitted inside a modal with sequential dismissal (e.g. calling `saveEditPatient(id)` followed by `closeModal()`), always read all required input values synchronously at the very beginning of the submission handler. Otherwise, async steps (like database gets) will yield execution, letting `closeModal()` run first and clear the DOM, causing null-element reference crashes when the handler resumes.
 - **Responsive Layout Classes:** Never use hardcoded inline styles for grid layouts (e.g. `display: grid; grid-template-columns: ...`). Use the predefined stylesheet grid classes (`.grid-2-equal`, `.grid-2-1`, `.grid-1-2`, `.grid-14-1`) which are configured to automatically stack into a single column on mobile.

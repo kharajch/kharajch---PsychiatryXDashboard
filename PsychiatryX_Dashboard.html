@@ -8,31 +8,31 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
-    --bg: #f4f6f9;
-    --surface: #ffffff;
-    --surface2: #f8fafc;
-    --border: #e2e8f0;
-    --border2: #cbd5e1;
-    --text: #0f172a;
-    --text2: #475569;
-    --text3: #94a3b8;
-    --accent: #1e40af;
-    --accent-light: #dbeafe;
-    --accent2: #0f766e;
-    --accent2-light: #ccfbf1;
-    --danger: #dc2626;
-    --danger-light: #fee2e2;
+    --bg: #0D0D0D;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: rgba(230, 57, 70, 0.15);
+    --border2: rgba(230, 57, 70, 0.35);
+    --text: #ffffff;
+    --text2: #a0a0a0;
+    --text3: #626262;
+    --accent: #e63946;
+    --accent-light: rgba(230, 57, 70, 0.08);
+    --accent2: #000000;
+    --accent2-light: rgba(230, 57, 70, 0.04);
+    --danger: #e63946;
+    --danger-light: rgba(230, 57, 70, 0.08);
     --warn: #d97706;
-    --warn-light: #fef3c7;
+    --warn-light: rgba(217, 119, 6, 0.08);
     --success: #059669;
-    --success-light: #d1fae5;
+    --success-light: rgba(5, 150, 105, 0.08);
     --purple: #7c3aed;
-    --purple-light: #ede9fe;
+    --purple-light: rgba(124, 58, 237, 0.08);
     --sidebar-w: 260px;
     --header-h: 64px;
     --radius: 10px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+    --shadow: 0 4px 12px rgba(0,0,0,0.5);
+    --shadow-md: 0 0 20px rgba(230, 57, 70, 0.15);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
@@ -40,14 +40,14 @@
   /* Layout */
   #app { display: flex; min-height: 100vh; }
   #sidebar {
-    width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border);
+    width: var(--sidebar-w); background: rgba(12, 12, 12, 0.95); border-right: 1px solid var(--border);
     display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh;
     overflow-y: auto; z-index: 100;
   }
   #main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
   #header {
-    height: var(--header-h); background: var(--surface); border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; padding: 0 28px; gap: 16px; position: sticky; top: 0; z-index: 50;
+    height: var(--header-h); background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; padding: 0 28px; gap: 16px; position: sticky; top: 0; z-index: 50;
   }
   #content { padding: 28px; flex: 1; }
 
@@ -70,11 +70,11 @@
   .nav-sub .nav-item { font-size: 12px; padding: 6px 8px; }
   .sidebar-patient {
     margin: 10px; padding: 12px; background: var(--accent-light); border-radius: 8px;
-    border: 1px solid #bfdbfe;
+    border: 1px solid var(--border);
   }
   .sidebar-patient .label { font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
   .sidebar-patient .name { font-size: 13px; font-weight: 600; color: var(--accent); margin-top: 2px; }
-  .sidebar-patient .sub { font-size: 11px; color: #3b82f6; margin-top: 1px; }
+  .sidebar-patient .sub { font-size: 11px; color: var(--accent); opacity: 0.8; margin-top: 1px; }
 
   /* Cards */
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
@@ -93,11 +93,11 @@
   .form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
   .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
   .field input, .field select, .field textarea {
-    width: 100%; padding: 9px 12px; border: 1px solid var(--border2); border-radius: 7px;
-    font-size: 14px; color: var(--text); background: var(--surface); transition: border 0.15s;
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px;
+    font-size: 14px; color: var(--text); background: var(--accent2); transition: border 0.15s;
     font-family: inherit; outline: none;
   }
-  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(30,64,175,0.08); }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15); }
   .field textarea { resize: vertical; min-height: 80px; }
 
   /* Buttons */
@@ -107,11 +107,11 @@
     transition: all 0.15s; border: none; font-family: inherit;
   }
   .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { background: #1d3a9e; }
-  .btn-secondary { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
-  .btn-secondary:hover { background: var(--bg); }
+  .btn-primary:hover { background: #ff4d5b; }
+  .btn-secondary { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--surface); }
   .btn-danger { background: var(--danger); color: white; }
-  .btn-danger:hover { background: #b91c1c; }
+  .btn-danger:hover { background: #ff4d5b; }
   .btn-success { background: var(--success); color: white; }
   .btn-success:hover { background: #047857; }
   .btn-sm { padding: 6px 12px; font-size: 12px; }
@@ -124,17 +124,17 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: radial-gradient(circle at 10% 20%, rgb(242, 235, 243) 0%, rgb(224, 237, 242) 90.1%);
+    background: #080808;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
   }
   .auth-card {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: rgba(18, 18, 18, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
     border-radius: 16px;
     width: 420px;
     max-width: 90%;

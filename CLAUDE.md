@@ -46,12 +46,13 @@ The project uses Playwright for comprehensive testing:
 ```typescript
 await page.waitForFunction(() => (window as any).rxdb && (window as any).rxdb.patients, { timeout: 15000 });
 ```
+*Note for Delete Buttons:* Delete button locators in E2E tests target the literal `"🗑"` trash emoji. Ensure delete buttons render this emoji.
 
 ## 🎨 Styling
 
-- **Next.js:** Use Vanilla CSS Modules (`*.module.css`).
-- **Global Styles:** `app/globals.css`.
-- **Design System:** Follow the Stitch Design System guidelines (clean, minimalist, clinical).
+- **Design System:** Follow the Google Stitch integrated **"Crimson & Noir"** dark theme design tokens (primary `#E63946`, secondary `#000000` / `#0D0D0D` / `#161616`).
+- **Next.js & HTML styling:** Use **Vanilla CSS** modules or `app/globals.css`. **Tailwind CSS is strictly prohibited**.
+- **Interactive Stack:** Leverage Three.js, React Three Fiber, Framer Motion, GSAP, React Tilt, React Parallax, React Spring, and React Flip Toolkit for interactive elements and layouts.
 - **Responsive Layouts:** Use CSS grid utility classes (`.grid-2-equal`, `.grid-2-1`, `.grid-1-2`, `.grid-14-1`) rather than hardcoded inline styles. Always wrap tables in a `.table-responsive` container, and defensively verify element existence before modifying properties to prevent startup JS crashes.
 
 *Guide maintained by Gemini CLI - June 2026*

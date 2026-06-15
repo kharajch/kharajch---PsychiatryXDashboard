@@ -4,6 +4,8 @@ A professional, clinical-grade psychiatric management platform featuring a **Hyb
 
 ## 🌟 Core Features
 
+-   **Crimson & Noir Dark Theme:** Sleek, premium dark-mode interface built with a crimson red and black clinical palette using Google Stitch.
+-   **Immersive Micro-Animations:** Dynamic background particle systems, card hover effects, and layout animations powered by Three.js, React Three Fiber, Framer Motion, and GSAP.
 -   **Comprehensive Assessment Suite:** 10+ standardized psychiatric scales (CAA-14, CDA-17, SRA-20, etc.) with automated scoring.
 -   **Clinical Decision Support:** Intelligent flagging of high-risk responses and suicide risk markers.
 -   **Longitudinal Symptom Profiling:** Multi-domain visualization using Radar Charts for quick clinical insights.
@@ -24,10 +26,10 @@ This project employs a unique **Hybrid Architecture** to ensure reliability and 
 
 ## 🛠️ Technical Stack
 
--   **Frontend:** Next.js 16 (App Router), React 19, Vanilla CSS Modules.
+-   **Frontend:** Next.js 16 (App Router), React 19, Vanilla CSS (Strictly No Tailwind CSS).
 -   **Local Store:** RxDB (IndexedDB) with automated REST Replication.
 -   **Backend:** Next.js API Routes, Mongoose, MongoDB Atlas.
--   **Styling:** Stitch Design System (Modern, Clean, Clinical).
+-   **Interactive Visuals & Styling:** Google Stitch Design System, Three.js, React Three Fiber, Framer Motion, GSAP, React Tilt, React Parallax, React Spring, React Flip Toolkit, React Icons.
 -   **Testing:** Playwright E2E testing for sync and clinical logic.
 
 ## 🚀 Getting Started
