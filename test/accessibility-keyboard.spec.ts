@@ -11,7 +11,7 @@ test.describe('PsychiatryX Accessibility - Keyboard Navigation', () => {
     await page.locator('button:has-text("New Patient")').first().click();
     await page.locator('#reg-name').fill('Keyboard Test Patient');
     await page.locator('#reg-age').fill('28');
-    await page.locator('#reg-gender').selectOption('Non-binary');
+    await page.locator('#reg-gender').selectOption('Non-Binary');
     await page.locator('button:has-text("Register Patient")').click();
 
     // 2. Start Depression assessment

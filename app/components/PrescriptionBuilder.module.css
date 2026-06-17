@@ -1,0 +1,114 @@
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
+.rxFormLayout {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+}
+
+.medListSection {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.medBuilderRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.medRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.medDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.medName {
+  font-weight: 600;
+  color: white;
+}
+
+.medMeta {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.medInstructions {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.pastRxList {
+  margin-top: 24px;
+}
+
+.rxTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rxTable th {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.rxTable td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.rxTable tr:hover td {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.rxTable tr:last-child td {
+  border-bottom: none;
+}
+
+.actionCell {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .rxFormLayout {
+    grid-template-columns: 1fr;
+  }
+  
+  .medBuilderRow {
+    grid-template-columns: 1fr;
+  }
+}

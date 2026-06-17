@@ -1,0 +1,46 @@
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
+.reportTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reportTable th {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.reportTable td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.reportTable tr:hover td {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.reportTable tr:last-child td {
+  border-bottom: none;
+}
+
+.actionCell {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}

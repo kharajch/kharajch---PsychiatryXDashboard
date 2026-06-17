@@ -1,0 +1,137 @@
+.container {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
+.scoreDisplay {
+  text-align: center;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scoreCircle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 6px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.scoreNum {
+  font-size: 32px;
+  font-weight: 800;
+  color: white;
+}
+
+.scoreMax {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.scoreLabel {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.scoreDesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* Severity Bar Visual */
+.severityBar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 24px 0 12px;
+  width: 100%;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.severitySeg {
+  flex: 1;
+  height: 100%;
+}
+
+.severityMarkerContainer {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  height: 20px;
+}
+
+.severityMarker {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.severityMarker::before {
+  content: '▲';
+  font-size: 8px;
+  margin-bottom: -2px;
+}
+
+/* Domain Breakdown Styles */
+.domainsContainer {
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+
+.domainRow {
+  margin-bottom: 16px;
+}
+
+.domainHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.domainName {
+  color: var(--text-secondary);
+}
+
+.domainScore {
+  color: white;
+}
+
+.domainBar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.domainProgress {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 3px;
+}
+
+.notesCard {
+  margin-top: 24px;
+}

@@ -1,0 +1,141 @@
+.dashboardContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.statCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.statCardDanger {
+  background: rgba(230, 57, 70, 0.06);
+  border-color: var(--primary);
+}
+
+.statHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.statTitle {
+  font-size: 11px;
+  fontWeight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statIcon {
+  font-size: 18px;
+  color: var(--text-muted);
+}
+
+.statIconDanger {
+  color: var(--primary);
+}
+
+.statValue {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 8px 0 2px;
+  color: #FFFFFF;
+}
+
+.statValueDanger {
+  color: var(--primary);
+}
+
+.statSub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.dashboardLayout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.alertList {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.recentPatientsList {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.patientRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.patientRow:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(230, 57, 70, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.patientDetails p {
+  margin: 0;
+}
+
+.patientName {
+  font-weight: 600;
+}
+
+.patientMeta {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .dashboardLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}

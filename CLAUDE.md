@@ -31,12 +31,24 @@ The project uses Playwright for E2E and unit testing.
 
 ## 📜 Development & Code Style Conventions
 
-- **Styling Mandate:** Style all pages and components using **Vanilla CSS**. The use of Tailwind CSS is strictly prohibited.
+- **Architecture:** The frontend is fully modularized with subcomponents located in `app/components/` (e.g., `PatientDatabase.tsx`, `PatientProfile.tsx`, `PrescriptionBuilder.tsx`, `Sidebar.tsx`). Avoid inline styles and page monolithic bloat.
+- **Styling Mandate:** Style all pages and components using **Vanilla CSS** with CSS Modules (`*.module.css`). The use of Tailwind CSS is strictly prohibited.
 - **Next.js & React Version:** The project runs on Next.js 16 (App Router) and React 19.
 - **E2E Motion Snapping:**
   - When Playwright tests run, `navigator.webdriver` is set to `true`.
-  - The application automatically appends the `.no-animations` class to the body, which sets transition and animation durations to `0s` in CSS.
-  - React components read `isTestEnv` state and wrap their rendering trees in `<MotionConfig transition={{ duration: 0 }}>` and set element-specific spring transitions to `duration: 0` to prevent Playwright timing out on unstable elements.
+  - The application automatically appends the `.no-animations` class to the body, which sets `animation: none !important;` and `transition: none !important;` in CSS.
+  - React components read `isTestEnv` state and wrap their rendering trees in `<MotionConfig transition={isTestEnv ? { duration: 0 } : undefined}>` or set spring transitions to `duration: 0` to prevent Playwright timing out.
+- **Critical E2E Selectors:** To ensure testing passes, do not modify key identifiers or text matches:
+  - Empty prescription state row text: `"No prescriptions yet."`
+  - Edit Details button: `"Edit Details"`
+  - Assessment notes textarea: `id="assess-notes"`
+  - Completion buttons: `"Save & Print PDF"` and `"Return to Patient Profile"`
+  - High risk header: contains `"CRITICAL ALERT"`
+  - Gender value: `"Non-Binary"`
+  - Patient prefix: `"MKS-"`
 - **Clinical Data Integrity:**
   - Modifications to assessment scales or high-risk flagging (especially suicide markers in CDA-17 Item 16 or SRA-20 Item 1) must be logged and highlighted.
   - Audits of patient edits must be recorded via the `AuditLog` collection.
+- **Development & Verification Utilities:**
+  - Verify database connectivity: `node scripts/test-db.js`
+  - Seed local development database: `curl http://localhost:3000/api/dev/seed` (admin credentials: `admin` / `password123`)

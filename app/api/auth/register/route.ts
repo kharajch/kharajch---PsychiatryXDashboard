@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { encode } from 'next-auth/jwt';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { connectToDatabase } from '../../../../lib/mongodb';
@@ -60,8 +61,22 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
     });
 
+    // Sign the token using NextAuth JWT encoder
+    const token = await encode({
+      token: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.username,
+        clinicId: newUser.clinicId,
+        role: newUser.role
+      },
+      secret: process.env.NEXTAUTH_SECRET || 'development-secret-only-not-for-production',
+      maxAge: 30 * 24 * 60 * 60 // 30 days
+    });
+
     return corsResponse({
       message: 'Account created successfully',
+      token,
       user: {
         id: newUser.id,
         name: newUser.name,

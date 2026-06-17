@@ -51,10 +51,10 @@ test.describe('PsychiatryX Direct Sync (Zero-Auth) E2E', () => {
     await page.waitForFunction(() => (window as any).rxdb && (window as any).rxdb.patients, { timeout: 15000 });
     
     // 3. Verify it shows offline status
-    await expect(syncText).toContainText('OFFLINE', { timeout: 15000 });
+    await expect(syncText).toContainText('offline', { timeout: 15000, ignoreCase: true });
     
     // 4. Verify we can still register a patient offline
-    await page.locator('#sidebar >> text=Register Patient').click();
+    await page.locator('button:has-text("New Patient")').first().click();
     const testName = 'Direct Offline Patient';
     await page.locator('#reg-name').fill(testName);
     await page.locator('#reg-age').fill('30');
@@ -74,7 +74,7 @@ test.describe('PsychiatryX Direct Sync (Zero-Auth) E2E', () => {
     // by default for simplified open-source operation.
     
     // 1. Register a patient on the client
-    await page.locator('#sidebar >> text=Register Patient').click();
+    await page.locator('button:has-text("New Patient")').first().click();
     const testName = 'Zero Auth Patient ' + Date.now();
     await page.locator('#reg-name').fill(testName);
     await page.locator('#reg-age').fill('45');

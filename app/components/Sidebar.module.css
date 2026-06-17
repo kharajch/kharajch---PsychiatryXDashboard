@@ -1,0 +1,379 @@
+.sidebar {
+  width: var(--sidebar-width);
+  background: rgba(12, 12, 12, 0.95);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebarOpen {
+  transform: translateX(0);
+}
+
+.sidebarScan {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.sidebarScan::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(180deg, rgba(230, 57, 70, 0.04) 0%, transparent 100%);
+  animation: scanSweep 8s linear infinite;
+}
+
+.sidebarLogo {
+  padding: 14px 14px 10px;
+  text-align: center;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebarBrandCorner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: var(--primary);
+  opacity: 0.2;
+}
+
+.sidebarBrandCornerTl {
+  top: 10px;
+  left: 10px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.sidebarBrandCornerBr {
+  bottom: 10px;
+  right: 10px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+.sidebarPulseDot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: pulseDot 2.5s ease-in-out infinite;
+}
+
+.sidebarGlowLine {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: 0.4;
+  animation: glowLinePulse 4s ease-in-out infinite;
+}
+
+.sidebarPatient {
+  margin: 10px 10px 0;
+  padding: 12px;
+  background: rgba(230, 57, 70, 0.08);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.sidebarPatientLabel {
+  font-size: 10px;
+  color: var(--primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebarPatientName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-top: 2px;
+}
+
+.sidebarPatientSub {
+  font-size: 11px;
+  color: var(--primary);
+  opacity: 0.8;
+  margin-top: 1px;
+}
+
+.sidebarDivider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 10px 6px;
+}
+
+.sidebarDivider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+
+.sidebarDividerLabel {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.sidebarSection {
+  padding: 0 10px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  margin-bottom: 3px;
+  font-size: 13px;
+  position: relative;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: background 0.25s, color 0.25s, box-shadow 0.25s, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navItem:hover {
+  background: rgba(230, 57, 70, 0.1);
+  color: #FFFFFF;
+  transform: translateX(6px);
+  box-shadow: -4px 0 0 var(--primary);
+}
+
+.navItemActive {
+  background: linear-gradient(135deg, var(--primary), rgba(179, 16, 32, 0.9));
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
+}
+
+.navItemActive:hover {
+  transform: none;
+  box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
+}
+
+.navActiveIndicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #FFFFFF;
+  border-radius: 0 3px 3px 0;
+  box-shadow: 0 0 12px rgba(230, 57, 70, 0.5);
+  animation: navIndicatorPulse 2s ease-in-out infinite;
+}
+
+.sidebarAnalytics {
+  margin: 12px 10px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebarAnalytics:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(230, 57, 70, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.sidebarAnalyticsTitle {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebarAnalyticsChartContainer {
+  position: relative;
+  width: 100%;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.01);
+  margin-bottom: 8px;
+}
+
+.sidebarAnalyticsChartContainer:last-child {
+  margin-bottom: 0;
+}
+
+.sidebarQuickStat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(230, 57, 70, 0.08);
+  border-radius: var(--radius);
+  transition: all 0.3s;
+  cursor: default;
+}
+
+.sidebarQuickStat:hover {
+  background: rgba(230, 57, 70, 0.06);
+  border-color: rgba(230, 57, 70, 0.2);
+  transform: translateX(3px);
+}
+
+.sidebarQuickStatIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.sidebarQuickStatValue {
+  font-size: 16px;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+.sidebarQuickStatLabel {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.sidebarProfile {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profileAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.profileDetails {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.profileName {
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profileStatus {
+  font-size: 9px;
+  color: #10B981;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 600;
+}
+
+.statusDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #10B981;
+}
+
+.sidebarFooter {
+  padding: 14px 12px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+@keyframes scanSweep {
+  0% { top: -60px; }
+  100% { top: 100%; }
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.4); }
+}
+
+@keyframes glowLinePulse {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes navIndicatorPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(230, 57, 70, 0.3); opacity: 1; }
+  50% { box-shadow: 0 0 16px rgba(230, 57, 70, 0.6); opacity: 0.85; }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    width: 260px;
+    height: 100vh;
+    z-index: 1000;
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
+    transform: translateX(0);
+  }
+  .sidebarOpen {
+    transform: translateX(260px);
+  }
+}
+
+.navSub {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}

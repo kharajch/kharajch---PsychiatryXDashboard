@@ -15,7 +15,7 @@ A professional, clinical-grade psychiatric management platform featuring a **Hyb
 -   **Sync Status Visibility:** Real-time visual feedback in the header (🟢/🟡/🔴) indicating MongoDB connectivity status.
 -   **Branded PDF Reporting:** Automated generation of professional clinical reports with clinic-specific branding and QR verification.
 -   **Mobile Responsive UI:** Collapsible off-screen drawer navigation on screens <= 768px, horizontal scroll containment for clinical lists/tables, and auto-wrapping patient database layout.
--   **Clinician Space Authentication:** Glassmorphic Sign In and Sign Up page overlays that protect the clinical database and dashboard, creating isolated clinic environments for registered doctors.
+-   **Clinician Space Authentication:** Glassmorphic Sign In and Sign Up page overlays that protect the clinical database and dashboard, creating isolated clinic environments for registered doctors. The registration flow features seamless automatic login via signed JWT token generation.
 
 ## 🏗️ Hybrid Architecture
 
@@ -27,11 +27,11 @@ This project employs a unique **Hybrid Architecture** to ensure reliability and 
 
 ## 🛠️ Technical Stack
 
--   **Frontend:** Next.js 16 (App Router), React 19, Vanilla CSS (Strictly No Tailwind CSS).
+-   **Frontend:** Next.js 16 (App Router), React 19, modular subcomponent architecture (`app/components/`) utilizing CSS modules, Vanilla CSS (Strictly No Tailwind CSS).
 -   **Local Store:** RxDB (IndexedDB) with automated REST Replication.
 -   **Backend:** Next.js API Routes, Mongoose, MongoDB Atlas.
 -   **Interactive Visuals & Styling:** Google Stitch Design System, Three.js, React Three Fiber, Framer Motion, GSAP, React Tilt, React Parallax, React Spring, React Flip Toolkit, React Icons.
--   **Testing:** Playwright E2E testing for sync and clinical logic.
+-   **Testing:** Playwright E2E testing for sync, multi-tenancy, and clinical logic.
 
 ## 🚀 Getting Started
 

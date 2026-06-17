@@ -39,7 +39,7 @@ test.describe('PsychiatryX Dashboard E2E Flows', () => {
     await page.waitForFunction(() => (window as any).rxdb && (window as any).rxdb.patients, { timeout: 15000 });
 
     // 2. Register patient
-    await page.locator('#sidebar >> text=Register Patient').click();
+    await page.locator('button:has-text("New Patient")').first().click();
     const testName = 'Offline Flow Patient ' + Math.floor(Math.random() * 10000);
     await page.locator('#reg-name').fill(testName);
     await page.locator('#reg-age').fill('41');
@@ -60,7 +60,7 @@ test.describe('PsychiatryX Dashboard E2E Flows', () => {
   });
 
   test('should complete suicide risk assessment and trigger critical alert warning', async ({ page }) => {
-    await page.locator('#sidebar >> text=Register Patient').click();
+    await page.locator('button:has-text("New Patient")').first().click();
     const testName = 'High Risk Patient ' + Math.floor(Math.random() * 10000);
     await page.locator('#reg-name').fill(testName);
     await page.locator('#reg-age').fill('34');
@@ -88,7 +88,7 @@ test.describe('PsychiatryX Dashboard E2E Flows', () => {
   });
 
   test('should build, save, load, and delete a prescription in Prescription Builder', async ({ page }) => {
-    await page.locator('#sidebar >> text=Register Patient').click();
+    await page.locator('button:has-text("New Patient")').first().click();
     await page.locator('#reg-name').fill('Rx Builder Patient ' + Math.floor(Math.random() * 10000));
     await page.locator('#reg-age').fill('27');
     await page.locator('#reg-gender').selectOption('Female');
@@ -117,7 +117,7 @@ test.describe('PsychiatryX Dashboard E2E Flows', () => {
   });
 
   test('should maintain active patient context during navigation and generate full report PDF', async ({ page }) => {
-    await page.locator('#sidebar >> text=Register Patient').click();
+    await page.locator('button:has-text("New Patient")').first().click();
     const testName = 'Nav Context Patient ' + Math.floor(Math.random() * 10000);
     await page.locator('#reg-name').fill(testName);
     await page.locator('#reg-age').fill('50');

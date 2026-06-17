@@ -43,11 +43,8 @@
 body.no-animations *,
 body.no-animations *::before,
 body.no-animations *::after {
-  animation-delay: 0s !important;
-  animation-duration: 0s !important;
-  animation-iteration-count: 1 !important;
-  transition-delay: 0s !important;
-  transition-duration: 0s !important;
+  animation: none !important;
+  transition: none !important;
   scroll-behavior: auto !important;
 }
 

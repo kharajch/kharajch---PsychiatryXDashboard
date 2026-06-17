@@ -1,0 +1,88 @@
+.assessmentContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.assessmentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.assessmentCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 160px;
+}
+
+.assessmentCard:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(230, 57, 70, 0.1);
+}
+
+.assessmentCardCompleted {
+  border-color: var(--success);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.checkCircle {
+  color: var(--success);
+  font-size: 16px;
+}
+
+.infoSection {
+  margin-top: 8px;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  line-height: 1.3;
+}
+
+.itemsCount {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.scoreBadge {
+  margin-top: 12px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-block;
+  align-self: flex-start;
+}
